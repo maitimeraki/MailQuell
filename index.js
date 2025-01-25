@@ -43,7 +43,10 @@ app.get("/auth", (req, res) => {
     req.session.oauthState = state;
     const authUrl = oAuth2Client.generateAuthUrl({
       access_type: "offline",
-      scope: ["https://www.googleapis.com/auth/gmail.readonly"],
+      scope: ['https://www.googleapis.com/auth/gmail.readonly',
+        'https://www.googleapis.com/auth/gmail.modify',
+        'https://www.googleapis.com/auth/pubsub',  // Add PubSub scope
+        'https://www.googleapis.com/auth/cloud-platform'],
       state: state,
       prompt: "consent"
     });
@@ -82,39 +85,53 @@ app.get("/auth/google/callback", async (req, res) => {
     // Save tokens to file
     await fs.writeFile("token.json", JSON.stringify(tokens));
 
+    res.redirect('/watch');
     // Clear state after use
     delete req.session.oauthState;
     req.session.save();
-    res.send("Authentication successful! You can close this tab.");
-    // res.redirect('/success');
+    // res.send("Authentication successful! You can close this tab.");
   } catch (error) {
     console.error('Auth Error:', error.response);
     res.status(400).send(error.message);
   }
 });
-app.get("/success", (req, res) => {
-  res.send("Authentication successful! You can close this tab.");
-});
+// app.get("/success", (req, res) => {
+//   res.send("Authentication successful! You can close this tab.");
+// });
 // Watch Gmail function
 async function watchGmail(auth) {
   const gmail = google.gmail({ version: "v1", auth });
-  const response = await gmail.users.watch({
-    userId: "personalusecase10@gmail.com",
-    requestBody: {
-      labelIds: ["INBOX"],
-      topicName: process.env.TOPIC_NAME,
-    },
-  });
-  console.log("Watch response:", response.data);
-}
+  try {
+    const response = await gmail.users.watch({
+      userId: "anupammaiti10@gmail.com",
+      requestBody: {
+        labelIds: ["INBOX"],
+        topicName: process.env.PUB_SUB_TOPIC_NAME
+      },
+    });
+    console.log("Watch response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error setting up Gmail watch:", error);
+    throw error;
+  }
 
+}
 // Endpoint to initiate watching
 app.get("/watch", async (req, res) => {
   try {
-    await watchGmail(oAuth2Client);
-    res.send("Watch initiated successfully.");
+    // Load tokens from file
+    const tokenData = await fs.readFile("token.json", "utf-8");
+    const tokens = JSON.parse(tokenData);
+
+    // Set credentials for oAuth2Client
+    oAuth2Client.setCredentials(tokens);
+
+    // Call the watch function
+    const response = await watchGmail(oAuth2Client);
+    res.send("Watch initiated successfully. History ID: " + response.historyId);
   } catch (error) {
-    console.error("Error watching Gmail:", error);
+    console.error("Error watching Gmail:", error.message);
     res.status(500).send("Failed to initiate watch.");
   }
 });
