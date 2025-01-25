@@ -6,6 +6,7 @@ const session = require("express-session");
 const dotenv = require("dotenv");
 
 dotenv.config();
+const PORT = process.env.PORT || 8000;
 // Add session middleware
 app.use(session({
   secret: process.env.SESSION_SECRET,
@@ -20,11 +21,10 @@ app.use(session({
 app.use((req, res, next) => {
   console.log('Session ID:', req.sessionID);
   console.log('Session State:', req.session.oauthState);
-  console.log('Request URL:', req.url);
+
   next();
 });
 
-const PORT = process.env.PORT || 8000;
 
 const CREDENTIALS = require("./credentials.json");
 const { client_secret, client_id, redirect_uris } = CREDENTIALS.installed;
@@ -45,6 +45,7 @@ app.get("/auth", (req, res) => {
       access_type: "offline",
       scope: ["https://www.googleapis.com/auth/gmail.readonly"],
       state: state,
+      prompt: "consent"
     });
     console.log("Auth initiated with state:", state);
     res.redirect(authUrl);
@@ -81,14 +82,14 @@ app.get("/auth/google/callback", async (req, res) => {
     // Save tokens to file
     await fs.writeFile("token.json", JSON.stringify(tokens));
 
+    // Clear state after use
     delete req.session.oauthState;
     req.session.save();
     res.send("Authentication successful! You can close this tab.");
-    res.redirect('/success');
-    // Clear state after use
+    // res.redirect('/success');
   } catch (error) {
-    console.error("Callback error:", error.response);
-    res.status(500).send("Callback failed");
+    console.error('Auth Error:', error.response);
+    res.status(400).send(error.message);
   }
 });
 app.get("/success", (req, res) => {
@@ -98,10 +99,10 @@ app.get("/success", (req, res) => {
 async function watchGmail(auth) {
   const gmail = google.gmail({ version: "v1", auth });
   const response = await gmail.users.watch({
-    userId: "maitianupam567@gmail.com",
+    userId: "personalusecase10@gmail.com",
     requestBody: {
       labelIds: ["INBOX"],
-      topicName: "projects/gmail-api-448311/topics/YOUR_TOPIC_NAME",
+      topicName: process.env.TOPIC_NAME,
     },
   });
   console.log("Watch response:", response.data);
