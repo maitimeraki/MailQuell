@@ -101,18 +101,20 @@ app.get("/auth/google/callback", async (req, res) => {
 // Watch Gmail function
 async function watchGmail(auth) {
   const gmail = google.gmail({ version: "v1", auth });
+  const topicName = `projects/${process.env.PROJECT_ID}/topics/${process.env.TOPIC_NAME}`;
+
   try {
     const response = await gmail.users.watch({
-      userId: "anupammaiti10@gmail.com",
+      userId: "me",
       requestBody: {
         labelIds: ["INBOX"],
-        topicName: process.env.PUB_SUB_TOPIC_NAME
+        topicName: topicName,
       },
     });
     console.log("Watch response:", response.data);
     return response.data;
   } catch (error) {
-    console.error("Error setting up Gmail watch:", error);
+    console.error("Error setting up Gmail watch:", error.response);
     throw error;
   }
 
@@ -136,6 +138,43 @@ app.get("/watch", async (req, res) => {
   }
 });
 
+// Webhook endpoint to receive notifications
+app.post('/webhook', async (req, res) => {
+  try {
+    const gmail = google.gmail({ version: 'v1', auth: oAuth2Client });
+
+    // Get the latest message
+    const messages = await gmail.users.messages.list({
+      userId: 'me',
+      maxResults: 1
+    });
+
+    if (messages.data.messages && messages.data.messages.length > 0) {
+      const messageId = messages.data.messages[0].id;
+
+      // Get message details
+      const message = await gmail.users.messages.get({
+        userId: 'me',
+        id: messageId,
+        format: 'full'
+      });
+
+      // Extract email details
+      const headers = message.data.payload.headers;
+      const subject = headers.find(h => h.name === 'Subject')?.value;
+      const from = headers.find(h => h.name === 'From')?.value;
+
+      console.log('New Email Received:');
+      console.log('From:', from);
+      console.log('Subject:', subject);
+    }
+
+    res.status(200).send('Notification processed');
+  } catch (error) {
+    console.error('Webhook error:', error);
+    res.status(500).send(error.message);
+  }
+});
 app.listen(PORT, () => {
   console.log(`Server is running on http://${process.env.HOST}:${PORT}`);
 });
