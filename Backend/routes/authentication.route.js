@@ -6,6 +6,8 @@ const { google } = require("googleapis");
 const fs = require("fs").promises;
 const { auth } = require("google-auth-library");
 const session = require("express-session");
+const watchGmailHandler = require("../middlewares/watchGmailHandler");
+const webHook = require("../middlewares/webHook");
 router.get("/auth", (req, res) => {
   try {
     // Add state parameter
@@ -53,14 +55,16 @@ router.get("/auth/google/callback", async (req, res,next) => {
         // Save the refresh token (e.g., in a database or file)
         // process.env.USER_REFRESH_TOKEN = tokens.refresh_token;
       }
-  
+
+      // Set tokens to the client
       oAuth2Client.setCredentials(tokens);
-  
+
       console.log("Tokens received:", tokens); // Log the received tokens
       // Save tokens to file
       await fs.writeFile("../token.json", JSON.stringify(tokens));
-      res.redirect('/watch');
+      // res.redirect('/users/watch');
       // Clear state after use
+      next();
       delete req.session.oauthState;
       req.session.save();
       // res.send("Authentication successful! You can close this tab.");
@@ -68,6 +72,6 @@ router.get("/auth/google/callback", async (req, res,next) => {
       console.error('Auth Error:', error.response);
       res.status(400).send(error.message);
     }
-  });
+  },watchGmailHandler.watchGmailHandler,webHook.webHook);
 
 module.exports=router;

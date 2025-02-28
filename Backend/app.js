@@ -7,8 +7,9 @@ const dotenv = require("dotenv");
 var cors = require("cors");
 const { auth } = require("google-auth-library");
 dotenv.config();
-const authentication = require("./routes/authentication.route");
-const watchGmail = require("./routes/watchGmail.route");
+app.set('view engine', 'ejs')
+const authenticationRoute = require("./routes/authentication.route");
+// const watchGmailRoute = require("./routes/watchGmail.route");
 const deleteEmailsFromSender = require("./controllers/delFromSender");
 // const PORT = process.env.PORT || 8000;
 // Add CORS middleware
@@ -32,18 +33,6 @@ app.use(session({
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));
-app.use('/users', [authentication]);
-app.use('/users', [watchGmail]);
-
-// API endpoint to trigger deletion      
-            // app.post('/delete-emails', async (req, res) => {
-            //   try {
-            //     const { from } = req.body;
-            //     const result = await deleteEmailsFromSender(from.senderEmail);
-            //     res.json({ message: result });
-            //   } catch (error) {
-            //     res.status(500).json({ error: error.message });
-            //   }
-            // });
-
+app.use('/users',authenticationRoute);
+// app.use('/users',watchGmailRoute);
 module.exports = app;

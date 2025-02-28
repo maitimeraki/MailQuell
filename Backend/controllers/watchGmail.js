@@ -3,7 +3,7 @@ const oAuth2Client = require('../controllers/oAuthClient');
 
 // Watch Gmail function
 module.exports.watchGmail = async (auth) => {
-    const gmail = google.gmail({ version: "v1", auth:oAuth2Client });
+    const gmail = google.gmail({ version: "v1", auth });
     const topicName = `projects/${process.env.PROJECT_ID}/topics/${process.env.TOPIC_NAME}`;
 
     try {
@@ -14,7 +14,7 @@ module.exports.watchGmail = async (auth) => {
                 topicName: topicName,
             },
         });
-        console.log("Watch response:", response.data);
+        // console.log("Watch response:", response.data);
         return response.data;
     } catch (error) {
         console.error("Error setting up Gmail watch:", error.response);
