@@ -9,8 +9,8 @@ const { auth } = require("google-auth-library");
 dotenv.config();
 app.set('view engine', 'ejs')
 const authenticationRoute = require("./routes/authentication.route");
-// const watchGmailRoute = require("./routes/watchGmail.route");
 const deleteEmailsFromSender = require("./controllers/delFromSender");
+const userRoute = require("./routes/user.route");
 // const PORT = process.env.PORT || 8000;
 // Add CORS middleware
         app.use(cors({
@@ -34,5 +34,6 @@ app.use(session({
   }
 }));
 app.use('/users',authenticationRoute);
-// app.use('/users',watchGmailRoute);
+app.use('/',userRoute);
+
 module.exports = app;

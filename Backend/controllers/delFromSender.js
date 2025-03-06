@@ -12,7 +12,6 @@ const oAuth2Client = require('../controllers/oAuthClient');
         q: `from:${senderEmail}`,
         // maxResults: 20
       });
-  
       if (response.data.messages && response.data.messages.length > 0) {
         for (const message of response.data.messages) {
           try {
@@ -24,7 +23,7 @@ const oAuth2Client = require('../controllers/oAuthClient');
                 removeLabelIds: ['INBOX']
               }
             });
-            console.log(email);
+            // console.log(email);
         // Then permanently delete
             // await gmail.users.messages.delete({
             //   userId: 'me',

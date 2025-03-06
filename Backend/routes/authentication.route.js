@@ -58,16 +58,14 @@ router.get("/auth/google/callback", async (req, res,next) => {
 
       // Set tokens to the client
       oAuth2Client.setCredentials(tokens);
-
       console.log("Tokens received:", tokens); // Log the received tokens
       // Save tokens to file
       await fs.writeFile("../token.json", JSON.stringify(tokens));
       // res.redirect('/users/watch');
-      // Clear state after use
       next();
-      delete req.session.oauthState;
-      req.session.save();
-      // res.send("Authentication successful! You can close this tab.");
+  // Clear state after use
+      // delete req.session.oauthState;
+      // req.session.save();
     } catch (error) {
       console.error('Auth Error:', error.response);
       res.status(400).send(error.message);
