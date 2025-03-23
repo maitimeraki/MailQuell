@@ -12,7 +12,34 @@ A web application for managing Gmail messages with OAuth2 authentication and aut
 - CORS-enabled API endpoints
 
 ## Tech Stack
-
+ 
+ 
+ ## Key Components
+ 
+ - **Authentication Module:**
+   - OAuth2 implementation
+   - Session management
+   - Token refresh handling
+ 
+ - **Email Processing:**
+   - Push notification handler
+   - Email filtering system
+   - Automated cleanup scripts
+ 
+ ## Development
+ 
+ <!-- - ESLint for code quality -->
+ - Nodemon for development
+  
+ 
+ <!-- ## Security Features
+ 
+ - HTTPS encryption
+ - XSS protection
+ - CSRF protection
+ - Rate limiting
+ - Input validation -->
+ 
 - **Backend:**
 
   - Node.js
