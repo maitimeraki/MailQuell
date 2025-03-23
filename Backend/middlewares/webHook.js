@@ -1,52 +1,69 @@
 const { google } = require("googleapis");
-const deleteEmailsFromSender = require('../controllers/delFromSender'); 
+const { processEmailsByTags } = require('../controllers/tags.controllers');
 const oAuth2Client = require('../controllers/oAuthClient');
-// Helper function to extract email address
-const extractEmail = (fullEmailString) => {
-  const matches = fullEmailString.match(/<(.+?)>/);
-  return matches ? matches[1] : fullEmailString;
-};
 
-module.exports.webHook = async (req, res) => {
+module.exports.webHook = async (req, res, next) => {
   try {                                 
     const gmail = google.gmail({ version: 'v1', auth: oAuth2Client });
 
+    // Get stored tags from session or database
+    const tags = req.session.tags || [];
+
+    if (tags.length === 0) {
+      console.log('No tags found to process');
+      return res.redirect('/dashboard');
+    }
+
     const messages = await gmail.users.messages.list({
       userId: 'me',
-      labelIds: ['INBOX','UNREAD'],
+      labelIds: ['INBOX', 'UNREAD'],
       maxResults: 5
     });
 
     if (!messages.data.messages) {
-      return res.status(200).send('No messages to process');
+      return res.redirect('/dashboard');
     }
 
-    if (messages.data.messages && messages.data.messages.length > 0) {
-      for (const message of messages.data.messages) {
-        const messageDetails = await gmail.users.messages.get({
+    // Process messages based on tags
+    for (const message of messages.data.messages) {
+      const messageDetails = await gmail.users.messages.get({
+        userId: 'me',
+        id: message.id,
+        format: 'full'
+      });
+
+      const headers = messageDetails.data.payload.headers;
+      const fromHeader = headers.find(h => h.name === 'From')?.value || '';
+      const subject = headers.find(h => h.name === 'Subject')?.value || '';
+      const body = messageDetails.data.snippet || '';
+      const userde={
+        fromHeader,
+        subject,
+        body
+      }
+      console.log("User Details:",userde);
+      
+      // Check if any tag matches
+      const matchedTag = tags.find(tag => 
+        fromHeader.toLowerCase().includes(tag.toLowerCase()) ||
+        subject.toLowerCase().includes(tag.toLowerCase()) ||
+        body.toLowerCase().includes(tag.toLowerCase())
+      );
+
+      if (matchedTag) {
+        await gmail.users.messages.modify({
           userId: 'me',
           id: message.id,
-          format: 'full'
+          requestBody: {
+            removeLabelIds: ['INBOX', 'UNREAD']
+          }
         });
-
-        const headers = messageDetails.data.payload.headers;
-        const fromHeader = headers.find(h => h.name === 'From')?.value;
-        
-        // Extract just the email address for comparison
-        const senderEmail = extractEmail(fromHeader);
-        console.log('Sender Email:', senderEmail); // Debug log
-
-        // Compare with the target email
-        if (senderEmail === 'maitianupam567@gmail.com') {
-          const response = await deleteEmailsFromSender.deleteEmailsFromSender(fromHeader);
-          console.log('Delete Response:', response);
-        } else {
-          console.log('Email not matched:', senderEmail);
-        }
+        console.log(`Processed email matching tag: ${matchedTag}`);
       }
     }
-    // res.redirect('/dashboard');
-    res.render('render')
+
+    return res.redirect('/dashboard');
+    
   } catch (error) {
     console.error('Webhook error:', error);
     res.status(500).json({
