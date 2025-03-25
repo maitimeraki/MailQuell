@@ -7,7 +7,7 @@ const fs = require("fs").promises;
 const { auth } = require("google-auth-library");
 const session = require("express-session");
 const watchGmailHandler = require("../middlewares/watchGmailHandler");
-const webHook = require("../middlewares/webHook");
+// const webHook = require("../middlewares/webHook");
 router.get("/auth", (req, res) => {
   try {
     // Add state parameter
@@ -48,7 +48,7 @@ router.get("/auth/google/callback", async (req, res,next) => {
       }
       console.log("Authorization code received:", req.query.code); // Log the received code
       const { tokens } = await oAuth2Client.getToken(req.query.code);
-  
+
       // Check if a refresh token is included and handle it
       if (tokens.refresh_token) {
         console.log("Save the refresh token:", tokens.refresh_token);
@@ -61,7 +61,6 @@ router.get("/auth/google/callback", async (req, res,next) => {
       console.log("Tokens received:", tokens); // Log the received tokens
       // Save tokens to file
       await fs.writeFile("../token.json", JSON.stringify(tokens));
-      // res.redirect('/users/watch');
       next();
   // Clear state after use
       // delete req.session.oauthState;
@@ -70,6 +69,6 @@ router.get("/auth/google/callback", async (req, res,next) => {
       console.error('Auth Error:', error.response);
       res.status(400).send(error.message);
     }
-  },watchGmailHandler.watchGmailHandler,webHook.webHook);
+  },watchGmailHandler.watchGmailHandler);
 
 module.exports=router;
