@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const path=require("path");
+const path = require("path");
 const { google } = require("googleapis");
 const fs = require("fs").promises;
 const session = require("express-session");
@@ -17,17 +17,17 @@ const tagsRoute = require('./routes/tagRoute.route');
 // Add CORS middleware
 app.set('view engine', 'ejs')
 app.use(cors({
-  origin:  'http://127.0.0.1:5500' ,
+  origin: 'http://127.0.0.1:5500',
   methods: ['GET', 'POST', 'OPTIONS'],
   credentials: true,
-  allowedHeaders: ["Content-Type", "Authorization"]
+  allowedHeaders: ["Content-Type", "Authorization","Accept"]
 }));
 app.use(express.static(path.join(__dirname, 'public')));
-        // Add body parser middleware
-        app.use(express.json());              
-        app.use(express.urlencoded({ extended: true }));
-        // Add session middleware
-        app.use(session({                       
+// Add body parser middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+// Add session middleware
+app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
@@ -36,9 +36,9 @@ app.use(express.static(path.join(__dirname, 'public')));
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));
-// console.log("app.js");
-app.use('/users',authenticationRoute);
-app.use('/',userRoute);
+
+app.use('/users', authenticationRoute);
+app.use('/', userRoute);
 app.use('/tags', tagsRoute);
 
 
