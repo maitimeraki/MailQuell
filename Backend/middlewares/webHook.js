@@ -1,74 +1,85 @@
-const { google } = require("googleapis");
-const { processEmailsByTags } = require('../controllers/tags.controllers');
-const oAuth2Client = require('../controllers/oAuthClient');
+// const { google } = require("googleapis");
+// const addressSplit = require('../service/addressSplit.service');
 
-module.exports.webHook = async (req, res, next) => {
-  try {                                 
-    const gmail = google.gmail({ version: 'v1', auth: oAuth2Client });
+// module.exports.processIncomingEmails = async (auth, tags) => {
+//     try {
+//         // Debug logs
+//         console.log("Received auth:", !!auth);
+//         console.log(tags);
+//         console.log(Array.isArray(tags));
+//         // Validate tags parameter
+//         if (!tags || !Array.isArray(tags)) {
+//             console.error('Invalid tags format:', tags);
+//             throw new Error('No valid tags provided');
+//         }
+//  // Convert tags to lowercase for case-insensitive comparison
+//  const normalizedTags = tags.map(tag => tag.toLowerCase().trim());
+//  console.log("Normalized tags:", normalizedTags);
+//         const gmail = google.gmail({ version: 'v1', auth });
 
-    // Get stored tags from session or database
-    const tags = req.session.tags || [];
+//         // Get latest messages
+//         const messages = await gmail.users.messages.list({
+//             userId: 'me',
+//             labelIds: ['INBOX', 'UNREAD'],
+//             maxResults: 5
+//         });
+//         if (!messages.data.messages || messages.data.messages.length === 0) {
+//             console.log("No messages found in inbox");
+//             return;
+//         }
+//         if (messages.data.messages) {
+//             for (const message of messages.data.messages) {
+//                 const messageDetails = await gmail.users.messages.get({
+//                     userId: 'me',
+//                     id: message.id,
+//                     format: 'full'
+//                 });
 
-    if (tags.length === 0) {
-      console.log('No tags found to process');
-      return res.redirect('/dashboard');
-    }
+//                 const headers = messageDetails.data.payload.headers;
+//                 // const subject = headers.find(h => h.name === 'Subject')?.value || '';
+//                 const fromHeader = headers.find(h => h.name === 'From')?.value || '';
+//                 // const body = messageDetails.data.snippet || '';
+                
+//                 // const User = {
+//                 //     sender: fromHeader,
+//                 //     subject: subject,
+//                 //     body: body
+//                 // };
+//                 // console.log("User Details:", User);
 
-    const messages = await gmail.users.messages.list({
-      userId: 'me',
-      labelIds: ['INBOX', 'UNREAD'],
-      maxResults: 5
-    });
+//                 // Get email addresses from fromHeader
+//                 const target = addressSplit.addressSplit(fromHeader);
+                
+//                 // Validate target array
+//                 if (!target || !Array.isArray(target)) {
+//                     console.log('No valid email addresses found in:', fromHeader);
+//                     continue;
+//                 }
 
-    if (!messages.data.messages) {
-      return res.redirect('/dashboard');
-    }
+//                  // Update the tag comparison logic
+//         const set = new Set(target.map(email => email.toLowerCase()));   
+//         const isPresent = normalizedTags.some(tag => set.has(tag));
+//         console.log('Checking normalized tags:', normalizedTags);
+//         console.log('Against normalized addresses:', Array.from(set));
+//         console.log('Match found:', isPresent);
 
-    // Process messages based on tags
-    for (const message of messages.data.messages) {
-      const messageDetails = await gmail.users.messages.get({
-        userId: 'me',
-        id: message.id,
-        format: 'full'
-      });
-
-      const headers = messageDetails.data.payload.headers;
-      const fromHeader = headers.find(h => h.name === 'From')?.value || '';
-      const subject = headers.find(h => h.name === 'Subject')?.value || '';
-      const body = messageDetails.data.snippet || '';
-      const userde={
-        fromHeader,
-        subject,
-        body
-      }
-      console.log("User Details:",userde);
-      
-      // Check if any tag matches
-      const matchedTag = tags.find(tag => 
-        fromHeader.toLowerCase().includes(tag.toLowerCase()) ||
-        subject.toLowerCase().includes(tag.toLowerCase()) ||
-        body.toLowerCase().includes(tag.toLowerCase())
-      );
-
-      if (matchedTag) {
-        await gmail.users.messages.modify({
-          userId: 'me',
-          id: message.id,
-          requestBody: {
-            removeLabelIds: ['INBOX', 'UNREAD']
-          }
-        });
-        console.log(`Processed email matching tag: ${matchedTag}`);
-      }
-    }
-
-    return res.redirect('/dashboard');
-    
-  } catch (error) {
-    console.error('Webhook error:', error);
-    res.status(500).json({
-      error: true,
-      message: error.message
-    });
-  }
-};
+//                 if (isPresent) {
+//                     await gmail.users.messages.modify({
+//                         userId: 'me',
+//                         id: message.id,
+//                         requestBody: {
+//                             removeLabelIds: ['INBOX', 'UNREAD'],
+//                             addLabelIds: ['TRASH']
+//                         }
+//                     });
+//                     console.log(`Removed email from inbox: ${fromHeader}`);
+//                 } else {
+//                     console.log(`Email from ${fromHeader} does not match any tags:`, tags);
+//                 }
+//             }
+//         }
+//     } catch (error) {
+//         console.error('Error processing emails:', error);
+//         throw error; // Rethrow to handle in calling function
+//     }
+// };
