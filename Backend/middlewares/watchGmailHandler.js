@@ -83,6 +83,8 @@ module.exports.watchGmailHandler = async (req, res) => {
     }
 };
 
+
+
 // Cleanup function for when user logs out
 // module.exports.stopWatch = (userId) => {
 //   const watchInterval = activeWatches.get(userId);

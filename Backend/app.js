@@ -9,7 +9,7 @@ var cors = require("cors");
 const { auth } = require("google-auth-library");
 dotenv.config();
 const authenticationRoute = require("./routes/authentication.route");
-const deleteEmailsFromSender = require("./controllers/delFromSender");
+// const deleteEmailsFromSender = require("./controllers/delFromSender");
 const userRoute = require("./routes/user.route");
 const tagsRoute = require('./routes/tagRoute.route');
 
@@ -17,7 +17,7 @@ const tagsRoute = require('./routes/tagRoute.route');
 // Add CORS middleware
 app.set('view engine', 'ejs')
 app.use(cors({
-  origin: 'http://127.0.0.1:5500',
+  origin:[ 'http://127.0.0.1:5500','http://localhost:3000/'],
   methods: ['GET', 'POST', 'OPTIONS'],
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization","Accept"]

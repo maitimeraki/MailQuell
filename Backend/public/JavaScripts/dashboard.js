@@ -1,6 +1,7 @@
 const addButton = document.getElementsByClassName("add-button");
 const rightDiv = document.getElementsByClassName("right");
 let tags = [];
+ 
 const sendTagsToBackend = async () => {
   try {
       const storedTags = JSON.parse(localStorage.getItem("tags"));

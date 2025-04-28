@@ -1,0 +1,185 @@
+/* .profile-initial{
+    width: 40px;
+    height:40px;
+    border-radius:50%;
+    background-color: #4285F4 ;
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-weight:bold;
+    font-size:18px;
+
+}
+.username{
+    margin-left:8px;
+    font-size:15px;
+    font-weight:400;
+} */
+
+/* Profile DropDown */
+/* .profile-dropdown-menu{
+    position:absolute;
+    top:50px;
+    right:20px;
+    width:1.5rem;
+    background-color: white;
+    border-radius:8px;
+
+} */
+
+/* Profile Header in DropDown */
+
+/* .profile-header{
+    padding:15px;
+    border-bottom: 1px solid #e0e0e0;
+
+}
+.profile-info{
+    display: flex;
+    flex-direction: column;
+}
+.profile-name{
+    font: size 15%;
+    font-weight:400;
+    color:#202124;
+}
+.profile-email{
+    font-size:15px;
+    color: #5f6368;
+    margin-top:5px;
+} */
+
+/* Profile actions */
+/* .profile-actions{
+    padding: 10px 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.profile-action{
+    padding:10px 10px;
+    color: #3c4043;
+    cursor:pointer;
+    width: 100px;
+}
+.profile-action:hover{
+    background-color: #f5f5f5;
+    border-radius: 4px;
+} */
+.profile-initial {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #4285F4; /* Google blue */
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 18px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12); /* Subtle shadow for depth */
+    text-transform: uppercase; /* Make initials uppercase */
+    transition: transform 0.2s ease; /* Smooth hover effect */
+}
+
+.profile-initial:hover {
+    transform: scale(1.05); /* Slight grow effect on hover */
+}
+
+.username {
+    margin-left: 8px;
+    font-size: 15px;
+    font-weight: 500; /* Slightly bolder for better readability */
+    color: #202124; /* Google's text color for better contrast */
+    letter-spacing: 0.2px; /* Improved letter spacing */
+}
+
+/* Profile DropDown */
+.profile-dropdown-menu {
+    position: absolute;
+    top: 50px;
+    right: 20px;
+    width: 280px; /* More reasonable width for a dropdown */
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2); /* Better shadow for floating element */
+    border: 1px solid #dadce0; /* Subtle border */
+    z-index: 1000; /* Ensure it appears above other elements */
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    pointer-events: none; /* Hide until active */
+    overflow: hidden; /* Keep content within rounded corners */
+}
+
+.profile-dropdown-menu.active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+/* Profile Header in DropDown */
+.profile-header {
+    padding: 16px;
+    border-bottom: 1px solid #e0e0e0;
+    background-color: #f8f9fa; /* Light gray background */
+}
+
+.profile-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-name {
+    font-size: 16px; /* Fixed typo (was 15%) */
+    font-weight: 500; /* Medium weight for better hierarchy */
+    color: #202124;
+    margin-bottom: 4px;
+}
+
+.profile-email {
+    font-size: 14px; /* Slightly smaller than name */
+    color: #5f6368;
+    margin-top: 4px;
+    word-break: break-all; /* Handle long email addresses */
+}
+
+/* Profile actions */
+.profile-actions {
+    padding: 8px 0; /* Simplified padding */
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-action {
+    padding: 12px 16px; /* More generous padding */
+    color: #3c4043;
+    cursor: pointer;
+    width: 100%; /* Full width of container */
+    text-align: left;
+    font-size: 14px;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+}
+
+.profile-action:hover {
+    background-color: #f5f5f5;
+}
+
+/* Add icons to profile actions */
+.profile-action i {
+    margin-right: 12px;
+    font-size: 18px;
+    color: #5f6368;
+    width: 20px;
+    text-align: center;
+}
+
+/* Sign out button specific styling */
+.profile-action.sign-out {
+    border-top: 1px solid #e0e0e0;
+    margin-top: 4px;
+    padding-top: 12px;
+}

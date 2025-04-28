@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Interface</title>
     <Link rel="stylesheet" href="/stylesheets/dashboard.css">
+    <Link rel="stylesheet" href='/stylesheets/profile.css'>
 
 </head>
 
@@ -14,13 +15,16 @@
         <div>
             <strong>MailSift</strong>
         </div>
-        <div>
+        <div id="profileContainer" class="profile-display">
             <div>
-                <img src="#">
+                <img id="profilePic" src="" alt="profilePicture">
             </div>
             <div>
-                <strong>Username</strong>
+                <strong class="username"></strong>
             </div>
+            <!-- <div id="'profileContainer">
+
+            </div> -->
         </div>
     </nav>
     <main>
@@ -35,6 +39,7 @@
     </main>
 
     <script src="/JavaScripts/dashboard.js"></script>
+    <script src="/JavaScripts/profileShow.js"></script>
 </body>
 
 </html>
