@@ -1,28 +1,31 @@
- const {profileData}=require("../service/profileData");
+// const { profileData } = require("../service/profileData");
 const profilePic = document.getElementById("profilePic");
 const profileName = document.getElementsByClassName("username")[0];
-// const profileContainer = document.getElementById("profileContainer");
-profileData().then((profile) => {
-    if (profile.picture) {
-        profilePic.src = profile.picture;
-        profilePic.alt = `${profile.name}'s profile picture`;
-    } else {
-        profilePic.style.display = 'none';
-        const initialCircle = document.createElement('div');
-        initialCircle.className = 'profile-initial';
-        initialCircle.textContent = profile.name.charAt(0).toUpperCase();
-        profilePic.parentNode.insertBefore(initialCircle, profilePic);
+const profileContainer = document.getElementById("profileContainer");
+(async function () {
+    await fetch('http://localhost:3000/details/profile').then((response) => response.json()).then((profile) => {
+        if (profile.picture) {
+            profilePic.src = profile.picture;
+            profilePic.alt = `${profile.name}'s profile picture`;
+        } else {
+            profilePic.style.display = 'none';
+            const initialCircle = document.createElement('div');
+            initialCircle.className = 'profile-initial';
+            initialCircle.textContent = profile.name?.charAt(0).toUpperCase();
+            profilePic.parentNode.insertBefore(initialCircle, profilePic);
 
-    }
-    profileName.innerText = profile.name;
-    if (profilePic !== null) {
-        profileDropdown(profilePic, profile);
-    }
+        }
+        profileName.innerText = profile.name;
+        if (profileContainer !== null) {
+            profileDropdown(profileContainer, profile);
+        }
 
-}).catch((error) => {
-    console.error('Error fetching profile data:', error.message); // Debug log
-    throw error;
-});
+    }).catch((error) => {
+        console.error('Error fetching of profile data:', error.message); // Debug log
+        throw error;
+    });
+
+})();
 function profileDropdown(container, profile) {
 
     const dropdownMenu = document.createElement('div');
@@ -51,12 +54,12 @@ function profileDropdown(container, profile) {
             dropdownMenu.classList.add('hidden');
         }
     })
-    // const signOutButton = dropdownMenu.querySelector("#signOutButton");
-    // if (signOutButton) {
-    //     signOutButton.addEventListener("click", () => {
-    //         // Call your signout function here
-    //         // Example: signOut().then(() => window.location.href = "/login");
-    //         console.log("Sign out clicked");
-    //     });
-    // }
+    const signOutButton = dropdownMenu.querySelector("#signOutButton");
+    if (signOutButton) {
+        signOutButton.addEventListener("click", () => {
+            // Call your signout function here
+            // Example: signOut().then(() => window.location.href = "/login");
+            console.log("Sign out clicked");
+        });
+    }
 }

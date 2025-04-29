@@ -12,7 +12,7 @@ const authenticationRoute = require("./routes/authentication.route");
 // const deleteEmailsFromSender = require("./controllers/delFromSender");
 const userRoute = require("./routes/user.route");
 const tagsRoute = require('./routes/tagRoute.route');
-
+const profileRoute = require("./routes/profile.route");
 // const PORT = process.env.PORT || 8000;
 // Add CORS middleware
 app.set('view engine', 'ejs')
@@ -35,11 +35,10 @@ app.use(session({
     secure: process.env.NODE_ENV === 'production',
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
-}));
+}));        
 
+app.use(profileRoute);
 app.use('/users', authenticationRoute);
 app.use('/', userRoute);
 app.use('/tags', tagsRoute);
-
-
 module.exports = app;
