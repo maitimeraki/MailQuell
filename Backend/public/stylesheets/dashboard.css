@@ -10,7 +10,9 @@ body {
     color: #333333;
     line-height: 1.6;
 }
-
+#favicon-name{
+    cursor: pointer;
+}
 /* This section contains the nav bar */
 nav {
     background-color: #ffffff;

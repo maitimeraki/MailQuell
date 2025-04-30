@@ -1,5 +1,6 @@
 const addButton = document.getElementsByClassName("add-button");
 const rightDiv = document.getElementsByClassName("right");
+const faviconName=document.getElementById('favicon-name');
 let tags = [];
  
 const sendTagsToBackend = async () => {
@@ -40,10 +41,13 @@ const sendTagsToBackend = async () => {
   }
 };
 
+faviconName.addEventListener('click', () => {
+  window.location.href='/home';
+});
 addButton[0].addEventListener("click", function () {
   let tagsContainer = document.createElement("div");
   tagsContainer.classList.add("tags-container");
-  let textarea = document.createElement("textarea");
+  let textarea = document.createElement("input");
   textarea.setAttribute(
     "placeholder",
     "Add tags (press Enter or comma to add)"
@@ -51,11 +55,6 @@ addButton[0].addEventListener("click", function () {
   textarea.setAttribute("class", "tag-input");
   textarea.setAttribute("id", "tagInput");
   textarea.classList.add("textAreaDiv");
-  // Show existing tags if any
-  // if (tags.length > 0) {
-  //     showTags(tagsContainer, textarea);
-  // }
-
   tagsContainer.appendChild(textarea);
   textarea.addEventListener("keyup", async function (event) {
     try {
