@@ -29,7 +29,7 @@ const mainContainer = document.getElementById("mainContainer");
 })();
 function profileDropdown(container, profile) {
     const dropdownMenu = document.createElement('div');
-    dropdownMenu.className = 'profile-dropdown-menu hidden';
+    dropdownMenu.className = 'profile-dropdown-menu';
     dropdownMenu.innerHTML = `
     <div class='profile-header'>
         <div class='profile-info'>
@@ -53,12 +53,16 @@ function profileDropdown(container, profile) {
         dropdownMenu.classList.toggle('hidden');
     });
 
+    window.addEventListener("DOMContentLoaded", () => {
+        console.log("DOM is ready!");
+    });
+    
     // Close when clicking outside
     document.addEventListener('click', () => {
         if (dropdownMenu.classList.contains("hidden")) {
             dropdownMenu.classList.remove('hidden');
         }
-        
+
     });
 
     // Sign out button handler
