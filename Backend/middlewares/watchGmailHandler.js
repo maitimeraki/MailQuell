@@ -58,25 +58,24 @@ async function maintainWatch(auth, initialTags) {
 module.exports.watchGmailHandler = async (req, res) => {
     try {
         // const tokenPath = path.join(__dirname, '..', 'token.json');
-        const tokenData = await fs.readFile('../token.json', "utf-8");
+        const tokenData =  req.session.token
+        console.log('Token data:', tokenData);
         const tokens = JSON.parse(tokenData);
-
         oAuth2Client.setCredentials(tokens);
         // Validate tags from request body
         const tags = req.body.tags || [];
-
-        // Set up initial watch
+        // Set up initial watch    
         const response = await watchGmail.watchGmail(oAuth2Client);
         console.log('Watch initiated with historyId:', response.historyId);
-        console.log(req.session);
+        console.log(req.session.token);
 
         // Start continuous watching
-        const userId = req.session.userId || 'default';
+        const userId = req.session.oauthState || 'default';
         console.log('Setting up watch for user:', userId);
         
         await maintainWatch(oAuth2Client, tags);
         
-        return res.redirect('/dashboard');
+        return res.redirect('/home');
     } catch (error) {
         console.error("Error watching Gmail:", error.message);
         res.status(500).send("Failed to initiate watch.");

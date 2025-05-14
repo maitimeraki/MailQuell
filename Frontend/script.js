@@ -32,29 +32,6 @@ async function initiateLogin() {
     }
 }
 
-// async function handleAuthCallback(code) {
-//     showLoading(true);
-//     try {
-//         const response = await fetch(`${API_URL}/auth/google/callback?code=${code}`);
-//         const data = await response.json();
-        
-//         if (response.ok) {
-//             showStatus('Login successful!', 'success');
-//             // Redirect to main app after successful login
-//             setTimeout(() => {
-//                 window.location.href = '/webhook';
-//             }, 1500);
-//         } else {
-//             throw new Error(data.error || 'Authentication failed');
-//         }
-//     } catch (error) {
-//         console.error('Auth callback failed:', error);
-//         showStatus('Authentication failed', 'error');
-//     } finally {
-//         showLoading(false);
-//     }
-// }
-
 function showStatus(message, type) {
     const status = document.getElementById('status');
     status.textContent = message;

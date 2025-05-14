@@ -1,11 +1,16 @@
 const fs = require("fs").promises;
 
 const path = require("path");
-async function profileData() {
+async function profileData(req, res) {
     try {
         // ../../ navigates two directories up, which takes you to MailSift.
-        const tokenPath = path.resolve(__dirname, '../../token.json');
-        const tokenData = await fs.readFile(tokenPath, "utf-8");
+        // const tokenPath = path.resolve(__dirname, '../../token.json');
+        // const tokenData = await fs.readFile(tokenPath, "utf-8");
+        const tokenData = req.session.token;
+        if (!tokenData) {
+            console.error("Token not found in session");
+            return res.status(401).send("Unauthorized: No token found");
+        }
         const token = JSON.parse(tokenData);
         const access_token = token.access_token;
         console.log("Access Token:", access_token);

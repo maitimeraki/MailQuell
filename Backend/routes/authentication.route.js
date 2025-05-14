@@ -1,25 +1,24 @@
 const express = require('express');
 const router = express.Router();
 const oAuth2Client = require('../controllers/oAuthClient');
-// Redirect for authentication
+// Redirect for authentication     
 const { google } = require("googleapis");
 const fs = require("fs").promises;
 const { auth } = require("google-auth-library");
-const session = require("express-session");
 const watchGmailHandler = require("../middlewares/watchGmailHandler");
-// const webHook = require("../middlewares/webHook");
 router.get("/auth", (req, res) => {
-  try {
-    // Add state parameter
+  try {               
+    
+    // Add state parameter        
     const state = Math.random().toString(36).substring(7);
-    req.session.oauthState = state;
+    req.session.oauthState = state; 
     const authUrl = oAuth2Client.generateAuthUrl({
       access_type: "offline",
       scope: ['https://www.googleapis.com/auth/gmail.readonly',
         'https://www.googleapis.com/auth/gmail.modify',
         'https://www.googleapis.com/auth/gmail.labels',
         'https://www.googleapis.com/auth/gmail.settings.basic',
-        'https://mail.google.com/',
+        // 'https://mail.google.com/',
         'https://www.googleapis.com/auth/pubsub',  // Add PubSub scope
         'https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email openid'],
       state: state,
@@ -27,8 +26,6 @@ router.get("/auth", (req, res) => {
     });
     console.log("Auth initiated with state:", state);
     res.redirect(authUrl);
-    // res.json({ message: 'CORS is working!' });
-    // res.json({ url: authUrl });
   } catch (e) {
     console.error("Auth error:", e);
     res.status(500).send("Authentication failed");
@@ -48,23 +45,19 @@ router.get("/auth/google/callback", async (req, res, next) => {
     }
     console.log("Authorization code received:", req.query.code); // Log the received code
     const { tokens } = await oAuth2Client.getToken(req.query.code);
-
     // Check if a refresh token is included and handle it
     if (tokens.refresh_token) {
       console.log("Save the refresh token:", tokens.refresh_token);
-      // Save the refresh token (e.g., in a database or file)
-      // process.env.USER_REFRESH_TOKEN = tokens.refresh_token;
     }
-
-    // Set tokens to the client
+    // Set tokens to the client    
     oAuth2Client.setCredentials(tokens);
-    console.log("Tokens received:", tokens); // Log the received tokens
+    console.log("Tokens received:",tokens); // Log the received tokens
     // Save tokens to file
-    await fs.writeFile("../token.json", JSON.stringify(tokens));
+    // await fs.writeFile("../token.json", JSON.stringify(tokens));
+    req.session.token=JSON.stringify(tokens);
+    req.session.save();
     next();
-    // Clear state after use
-    // delete req.session.oauthState;
-    // req.session.save();
+ 
   } catch (error) {
     console.error('Auth Error:', error.response);
     res.status(400).send(error.message);
