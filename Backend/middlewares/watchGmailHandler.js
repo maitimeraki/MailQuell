@@ -6,7 +6,6 @@ const tagsControllers = require("../controllers/tags.controllers");
 const {updateTags,activeTags}=require("../service/updateTags");
 // Store active watches and their associated tags
 let activeWatches = new Map();
-// let activeTags = new Map();
  
 // Function to maintain continuous watch
 async function maintainWatch(auth, initialTags) {
@@ -21,14 +20,14 @@ async function maintainWatch(auth, initialTags) {
       updateTags(auth, initialTags);
         // Create the interval
         const watchInterval = setInterval(async () => {
-            try {
+            try {                   
                 const timestamp = new Date().toISOString();
                 console.log(`Running check at ${timestamp}`);
 
                 // Get current tags for this auth
                 const currentTags = activeTags.get(auth) || [];
                 console.log('Current tags:', currentTags);
-
+                                     
                 if (currentTags.length > 0) {
                     await tagsControllers.processIncomingEmails(auth, currentTags);
                     console.log(`Completed check at ${timestamp}`);
@@ -58,7 +57,7 @@ async function maintainWatch(auth, initialTags) {
 module.exports.watchGmailHandler = async (req, res) => {
     try {
         // const tokenPath = path.join(__dirname, '..', 'token.json');
-        const tokenData =  req.session.token
+        const tokenData = req.session.token               
         console.log('Token data:', tokenData);
         const tokens = JSON.parse(tokenData);
         oAuth2Client.setCredentials(tokens);
@@ -67,13 +66,13 @@ module.exports.watchGmailHandler = async (req, res) => {
         // Set up initial watch    
         const response = await watchGmail.watchGmail(oAuth2Client);
         console.log('Watch initiated with historyId:', response.historyId);
-        console.log(req.session.token);
+        console.log(req.session.token) ; 
 
         // Start continuous watching
         const userId = req.session.oauthState || 'default';
         console.log('Setting up watch for user:', userId);
         
-        await maintainWatch(oAuth2Client, tags);
+        await maintainWatch(oAuth2Client, tags);           
         
         return res.redirect('/home');
     } catch (error) {

@@ -4,7 +4,7 @@ const { profileData: fetchProfileData } = require("../service/profileData");
 router.get('/details/profile', async (req, res) => {
     try {
         //Not to create naming conflicts with the imported function
-        const profile = await fetchProfileData();
+        const profile = await fetchProfileData(req,res);
         if (!profile) {
             return res.status(404).json({ error: "Profile data not found" });
         }

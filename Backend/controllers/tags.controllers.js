@@ -12,9 +12,9 @@ module.exports.processIncomingEmails = async (auth, tags) => {
             console.error('Invalid tags format:', tags);
             throw new Error('No valid tags provided');
         }
- // Convert tags to lowercase for case-insensitive comparison
- const normalizedTags = tags.map(tag => tag.toLowerCase().trim());
- console.log("Normalized tags:", normalizedTags);
+        // Convert tags to lowercase for case-insensitive comparison
+        const normalizedTags = tags.map(tag => tag.toLowerCase().trim());
+        console.log("Normalized tags:", normalizedTags);
         const gmail = google.gmail({ version: 'v1', auth });
 
         // Get latest messages
@@ -36,24 +36,22 @@ module.exports.processIncomingEmails = async (auth, tags) => {
                 });
 
                 const headers = messageDetails.data.payload.headers;
-                // const subject = headers.find(h => h.name === 'Subject')?.value || '';
                 const fromHeader = headers.find(h => h.name === 'From')?.value || '';
-                 
                 // Get email addresses from fromHeader
                 const target = addressSplit.addressSplit(fromHeader);
-                
+
                 // Validate target array
                 if (!target || !Array.isArray(target)) {
                     console.log('No valid email addresses found in:', fromHeader);
                     continue;
                 }
 
-                 // Update the tag comparison logic
-        const set = new Set(target.map(email => email.toLowerCase()));   
-        const isPresent = normalizedTags.some(tag => set.has(tag));
-        console.log('Checking normalized tags:', normalizedTags);
-        console.log('Against normalized addresses:', Array.from(set));
-        console.log('Match found:', isPresent);
+                // Update the tag comparison logic
+                const set = new Set(target.map(email => email.toLowerCase()));
+                const isPresent = normalizedTags.some(tag => set.has(tag));
+                console.log('Checking normalized tags:', normalizedTags);
+                console.log('Against normalized addresses:', Array.from(set));
+                console.log('Match found:', isPresent);
 
                 if (isPresent) {
                     await gmail.users.messages.modify({
