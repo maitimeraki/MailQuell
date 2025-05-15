@@ -5,6 +5,7 @@ const { google } = require("googleapis");
 const fs = require("fs").promises;
 const session = require("express-session");
 const dotenv = require("dotenv");
+var cookieParser = require('cookie-parser')
 var cors = require("cors");
 const { auth } = require("google-auth-library");
 dotenv.config();
@@ -16,6 +17,7 @@ const profileRoute = require("./routes/profile.route");
 // const PORT = process.env.PORT || 8000;
 // Add CORS middleware
 app.set('view engine', 'ejs')
+app.use(cookieParser())
 app.use(cors({
   origin:[ 'http://127.0.0.1:5500','http://localhost:3000/'],
   methods: ['GET', 'POST', 'OPTIONS'],
@@ -32,7 +34,7 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    httpOnly: true,
+    // httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }

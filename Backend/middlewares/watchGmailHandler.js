@@ -3,12 +3,12 @@ const path = require("path");
 const watchGmail = require("../controllers/watchGmail");
 const oAuth2Client = require("../controllers/oAuthClient");
 const tagsControllers = require("../controllers/tags.controllers");
-const {updateTags,activeTags}=require("../service/updateTags");
+const { updateTags, activeTags } = require("../service/updateTags");
 // Store active watches and their associated tags
 let activeWatches = new Map();
- 
+
 // Function to maintain continuous watch
-async function maintainWatch(auth, initialTags) {
+async function maintainWatch(req,auth, initialTags) {
     try {
         // Clear existing interval if any    
         if (activeWatches.has(auth)) {
@@ -16,21 +16,32 @@ async function maintainWatch(auth, initialTags) {
             activeWatches.delete(auth);
         }
 
-      // Store initial tags
-      updateTags(auth, initialTags);
+        // Store initial tags
+        updateTags(auth, initialTags);
         // Create the interval
         const watchInterval = setInterval(async () => {
-            try {                   
+            try {
                 const timestamp = new Date().toISOString();
                 console.log(`Running check at ${timestamp}`);
 
                 // Get current tags for this auth
                 const currentTags = activeTags.get(auth) || [];
                 console.log('Current tags:', currentTags);
-                                     
+
                 if (currentTags.length > 0) {
-                    await tagsControllers.processIncomingEmails(auth, currentTags);
-                    console.log(`Completed check at ${timestamp}`);
+                    try {
+                        let auth=req.cookies.Token;
+                        console.log('Auth:', auth);
+                        await tagsControllers.processIncomingEmails(auth, currentTags);
+                        console.log(`Completed check at ${timestamp}`);
+                    } catch (error) {
+                        if (error.message && (error.message.includes("invalid_grant") ||
+                            error.response?.data?.error === 'invalid_grant')) {
+                            console.log('Token expired, stopping watch interval');
+                        } else {
+                            console.error('Error processing token:', error);
+                        }
+                    }
                 } else {
                     console.log('No tags to process');
                 }
@@ -38,7 +49,6 @@ async function maintainWatch(auth, initialTags) {
                 console.error('Watch interval error:', error);
             }
         }, 6000);
-
         // Run first check immediately if we have tags
         if (initialTags && initialTags.length > 0) {
             await tagsControllers.processIncomingEmails(auth, initialTags);
@@ -57,7 +67,7 @@ async function maintainWatch(auth, initialTags) {
 module.exports.watchGmailHandler = async (req, res) => {
     try {
         // const tokenPath = path.join(__dirname, '..', 'token.json');
-        const tokenData = req.session.token               
+        const tokenData = req.session.token
         console.log('Token data:', tokenData);
         const tokens = JSON.parse(tokenData);
         oAuth2Client.setCredentials(tokens);
@@ -66,21 +76,24 @@ module.exports.watchGmailHandler = async (req, res) => {
         // Set up initial watch    
         const response = await watchGmail.watchGmail(oAuth2Client);
         console.log('Watch initiated with historyId:', response.historyId);
-        console.log(req.session.token) ; 
+        console.log(req.session.token);
 
         // Start continuous watching
         const userId = req.session.oauthState || 'default';
         console.log('Setting up watch for user:', userId);
-        
-        await maintainWatch(oAuth2Client, tags);           
-        
+        res.cookie("Token", tokens.access_token, {
+            maxAge: 24 * 60 * 60 * 1000, // 1 day
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+        });
+        await maintainWatch(req,oAuth2Client, tags);
+
         return res.redirect('/home');
     } catch (error) {
         console.error("Error watching Gmail:", error.message);
         res.status(500).send("Failed to initiate watch.");
     }
 };
-
 
 // Cleanup function for when user logs out
 // module.exports.stopWatch = (userId) => {
