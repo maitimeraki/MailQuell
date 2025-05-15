@@ -51,13 +51,13 @@ router.get("/auth/google/callback", async (req, res, next) => {
     }
     // Set tokens to the client    
     oAuth2Client.setCredentials(tokens);
-    console.log("Tokens received:",tokens); // Log the received tokens
+    console.log("Tokens received:", oAuth2Client?.credentials); // Log the received tokens
     // Save tokens to file
     // await fs.writeFile("../token.json", JSON.stringify(tokens));
     req.session.token=JSON.stringify(tokens);
     req.session.save();
     next();
- 
+
   } catch (error) {
     console.error('Auth Error:', error.response);
     res.status(400).send(error.message);

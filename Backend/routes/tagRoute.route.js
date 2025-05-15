@@ -17,9 +17,14 @@ router.post('/processTags', async (req, res) => {
                 message: "Invalid tags format"
             });
         }
-        const tokenData = await fs.readFile('../token.json', "utf-8");
+        const tokenData=req.session.token;
+        if (!tokenData) {
+            return res.status(401).json({
+                success: false,
+                message: "No valid token found"
+            });
+        }
         const tokens = JSON.parse(tokenData);
-
         oAuth2Client.setCredentials(tokens);
         const updated = updateTags(oAuth2Client, tags);
         console.log(updated);

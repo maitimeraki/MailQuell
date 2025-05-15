@@ -8,14 +8,13 @@ const { updateTags, activeTags } = require("../service/updateTags");
 let activeWatches = new Map();
 
 // Function to maintain continuous watch
-async function maintainWatch(req,auth, initialTags) {
+async function maintainWatch( auth, initialTags) {
     try {
         // Clear existing interval if any    
         if (activeWatches.has(auth)) {
             clearInterval(activeWatches.get(auth));
             activeWatches.delete(auth);
         }
-
         // Store initial tags
         updateTags(auth, initialTags);
         // Create the interval
@@ -23,15 +22,13 @@ async function maintainWatch(req,auth, initialTags) {
             try {
                 const timestamp = new Date().toISOString();
                 console.log(`Running check at ${timestamp}`);
-
+                // let auth = req.cookies.Token;
+                // console.log('Auth:', auth);
                 // Get current tags for this auth
                 const currentTags = activeTags.get(auth) || [];
                 console.log('Current tags:', currentTags);
-
                 if (currentTags.length > 0) {
                     try {
-                        let auth=req.cookies.Token;
-                        console.log('Auth:', auth);
                         await tagsControllers.processIncomingEmails(auth, currentTags);
                         console.log(`Completed check at ${timestamp}`);
                     } catch (error) {
@@ -53,7 +50,6 @@ async function maintainWatch(req,auth, initialTags) {
         if (initialTags && initialTags.length > 0) {
             await tagsControllers.processIncomingEmails(auth, initialTags);
         }
-
         // Store the watch interval
         activeWatches.set(auth, watchInterval);
         console.log('Watch interval set up successfully');
@@ -77,7 +73,6 @@ module.exports.watchGmailHandler = async (req, res) => {
         const response = await watchGmail.watchGmail(oAuth2Client);
         console.log('Watch initiated with historyId:', response.historyId);
         console.log(req.session.token);
-
         // Start continuous watching
         const userId = req.session.oauthState || 'default';
         console.log('Setting up watch for user:', userId);
@@ -86,7 +81,7 @@ module.exports.watchGmailHandler = async (req, res) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
         });
-        await maintainWatch(req,oAuth2Client, tags);
+        await maintainWatch( oAuth2Client, tags);
 
         return res.redirect('/home');
     } catch (error) {

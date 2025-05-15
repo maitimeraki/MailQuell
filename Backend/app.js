@@ -2,7 +2,6 @@ const express = require("express");
 const app = express();
 const path = require("path");
 const { google } = require("googleapis");
-const fs = require("fs").promises;
 const session = require("express-session");
 const dotenv = require("dotenv");
 var cookieParser = require('cookie-parser')
@@ -10,12 +9,9 @@ var cors = require("cors");
 const { auth } = require("google-auth-library");
 dotenv.config();
 const authenticationRoute = require("./routes/authentication.route");
-// const deleteEmailsFromSender = require("./controllers/delFromSender");
 const userRoute = require("./routes/user.route");
 const tagsRoute = require('./routes/tagRoute.route');
 const profileRoute = require("./routes/profile.route");
-// const PORT = process.env.PORT || 8000;
-// Add CORS middleware
 app.set('view engine', 'ejs')
 app.use(cookieParser())
 app.use(cors({
@@ -44,4 +40,6 @@ app.use(profileRoute);
 app.use('/users', authenticationRoute);
 app.use('/', userRoute);
 app.use('/tags', tagsRoute);
+
+
 module.exports = app;

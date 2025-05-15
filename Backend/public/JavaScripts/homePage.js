@@ -18,7 +18,8 @@ const sendTagsToBackend = async () => {
             
         },
           body: JSON.stringify({ tags: storedTags }),
-          credentials: 'include'
+          credentials: 'include',
+          
       });
 
       if (!response.ok) {                   
