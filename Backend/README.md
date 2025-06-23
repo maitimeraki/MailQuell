@@ -1,4 +1,4 @@
-# Gmail_NotificationRepo
+# MailSift
 
 A web application for managing Gmail messages with OAuth2 authentication and automated email processing capabilities.
 
