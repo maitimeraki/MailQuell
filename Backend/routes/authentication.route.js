@@ -14,22 +14,37 @@ router.get("/auth", (req, res) => {
     req.session.oauthState = state; 
     const authUrl = oAuth2Client.generateAuthUrl({
       access_type: "offline",
-      scope: ['https://www.googleapis.com/auth/gmail.readonly',
+      scope: [
+        'https://www.googleapis.com/auth/gmail.readonly',
         'https://www.googleapis.com/auth/gmail.modify',
         'https://www.googleapis.com/auth/gmail.labels',
-        'https://www.googleapis.com/auth/gmail.settings.basic',
-        // 'https://mail.google.com/',
-        'https://www.googleapis.com/auth/pubsub',  // Add PubSub scope
-        'https://www.googleapis.com/auth/cloud-platform', 'https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email openid'],
+        'https://www.googleapis.com/auth/pubsub',
+        'https://www.googleapis.com/auth/cloud-platform',
+        'https://www.googleapis.com/auth/userinfo.profile',
+        'https://www.googleapis.com/auth/userinfo.email openid'
+      ],
       state: state,
-      prompt: "consent"
+      prompt: "consent",
+      include_granted_scopes: true
     });
+
+    // Check if user has accepted ToS
+    // if (!req.session.tosAccepted) {
+    //   return res.redirect('/terms.html?redirect=' + encodeURIComponent(authUrl));
+    // }
+
     console.log("Auth initiated with state:", state);
     res.redirect(authUrl);
   } catch (e) {
     console.error("Auth error:", e);
     res.status(500).send("Authentication failed");
   }
+});
+
+// Add ToS acceptance endpoint
+router.post("/accept-tos", (req, res) => {
+  req.session.tosAccepted = true;
+  res.json({ success: true });
 });
 
 // Callback handler

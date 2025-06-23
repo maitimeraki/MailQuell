@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>vMailQuell - Terms of Service</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #e0e0e0;
+            background: #2a2a2a;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #3a3a3a;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            border: 1px solid #4a4a4a;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            border-bottom: 1px solid #4a4a4a;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            color: #ffffff;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            color: #cccccc;
+        }
+
+        .content {
+            padding: 40px;
+            counter-reset: section-counter;
+        }
+
+        .intro {
+            background: #404040;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border-left: 4px solid #667eea;
+            border: 1px solid #4a4a4a;
+        }
+
+        .intro p {
+            font-size: 1.1rem;
+            color: #d0d0d0;
+            margin: 0;
+        }
+
+        .section {
+            margin-bottom: 35px;
+            padding: 25px;
+            background: #404040;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            border: 1px solid #4a4a4a;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            animation: fadeInUp 0.6s ease forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .section:nth-child(1) { animation-delay: 0.1s; }
+        .section:nth-child(2) { animation-delay: 0.2s; }
+        .section:nth-child(3) { animation-delay: 0.3s; }
+        .section:nth-child(4) { animation-delay: 0.4s; }
+        .section:nth-child(5) { animation-delay: 0.5s; }
+        .section:nth-child(6) { animation-delay: 0.6s; }
+
+        .section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            border-color: #5a5a5a;
+        }
+
+        h2 {
+            color: #ffffff;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+            position: relative;
+        }
+
+        h2::before {
+            content: counter(section-counter);
+            counter-increment: section-counter;
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-right: 10px;
+            position: absolute;
+            left: -15px;
+            top: -5px;
+        }
+
+        .section p {
+            color: #d0d0d0;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        li {
+            background: #353535;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            position: relative;
+            transition: background-color 0.2s ease;
+            border: 1px solid #4a4a4a;
+            color: #d0d0d0;
+        }
+
+        li:hover {
+            background: #454545;
+            border-color: #5a5a5a;
+        }
+
+        li::before {
+            content: "✓";
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-right: 10px;
+        }
+
+        .important-notice {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 30px 0;
+            border: 1px solid #c0392b;
+        }
+
+        .important-notice h3 {
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .contact-section {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: white;
+            text-align: center;
+            margin-top: 40px;
+            border-radius: 15px;
+            border: 1px solid #4a4a4a;
+            padding: 25px;
+        }
+
+        .contact-section h2 {
+            color: white;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .contact-section h2::before {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .contact-section p {
+            color: #cccccc;
+        }
+
+        .contact-email {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px 25px;
+            border-radius: 25px;
+            display: inline-block;
+            margin-top: 15px;
+            text-decoration: none;
+            color: white;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .contact-email:hover {
+            background: rgba(255, 255, 255, 0.2);
+            text-decoration: none;
+            color: white;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .last-updated {
+            text-align: center;
+            color: #999;
+            font-size: 0.9rem;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #4a4a4a;
+        }
+
+        .last-updated strong {
+            color: #cccccc;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .header {
+                padding: 30px 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .section {
+                padding: 20px;
+            }
+
+            h2::before {
+                position: static;
+                margin-right: 10px;
+                margin-bottom: 10px;
+            }
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Scrollbar styling for dark theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #2a2a2a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #666;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Terms of Service</h1>
+            <p>Please read these terms carefully</p>
+        </div>
+
+        <div class="content">
+            <div class="intro">
+                <p>
+                    Welcome to MailQuell! These Terms of Service ("Terms") govern your use of our email management and filtering service. By accessing or using MailQuell, you agree to be bound by these Terms.
+                </p>
+            </div>
+
+            <div class="section">
+                <h2>Service Overview</h2>
+                <p>MailQuell provides an email management and filtering service that helps users organize and prioritize their Gmail messages. Our service includes:</p>
+                <ul>
+                    <li>Intelligent email filtering and categorization</li>
+                    <li>Priority inbox management</li>
+                    <li>Automated email organization</li>
+                    <li>Custom filtering rules and preferences</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>Account Terms</h2>
+                <p>To use MailQuell, you must meet the following requirements:</p>
+                <ul>
+                    <li>Have a valid Gmail account in good standing</li>
+                    <li>Provide accurate and complete account information</li>
+                    <li>Be at least 13 years old (or the minimum age in your jurisdiction)</li>
+                    <li>Protect your account credentials and maintain account security</li>
+                    <li>Comply with all applicable laws and regulations</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>Data Usage and Permissions</h2>
+                <p>By using MailQuell, you authorize us to:</p>
+                <ul>
+                    <li>Access and process your Gmail messages for filtering purposes</li>
+                    <li>Store necessary metadata and preferences for service functionality</li>
+                    <li>Apply machine learning algorithms to improve email categorization</li>
+                    <li>Maintain temporary copies of email data for processing</li>
+                </ul>
+                <div class="important-notice">
+                    <h3>⚠️ Important:</h3>
+                    <p>We only access your emails to provide our filtering service. We never read, store, or share the content of your emails for any other purpose.</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Privacy and Data Protection</h2>
+                <p>We are committed to protecting your privacy and data:</p>
+                <ul>
+                    <li>We never sell, rent, or share your personal data with third parties</li>
+                    <li>Email content is only accessed for automated filtering purposes</li>
+                    <li>All data is encrypted and stored securely</li>
+                    <li>You can revoke access permissions at any time</li>
+                    <li>Data retention follows industry best practices</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>Service Modifications and Availability</h2>
+                <p>MailQuell reserves the right to:</p>
+                <ul>
+                    <li>Modify, update, or discontinue services with reasonable notice</li>
+                    <li>Perform maintenance that may temporarily affect service availability</li>
+                    <li>Update these Terms of Service as needed</li>
+                    <li>Implement new features or remove existing ones</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>Account Termination</h2>
+                <p>Regarding account termination:</p>
+                <ul>
+                    <li>You may terminate your account at any time through your account settings</li>
+                    <li>We may suspend or terminate accounts for violations of these terms</li>
+                    <li>Upon termination, your data will be deleted according to our retention policy</li>
+                    <li>You can revoke Gmail access permissions independently through Google</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>Limitation of Liability</h2>
+                <p>MailQuell provides the service "as is" and:</p>
+                <ul>
+                    <li>We strive for high availability but cannot guarantee 100% uptime</li>
+                    <li>Users are responsible for maintaining backups of important emails</li>
+                    <li>We are not liable for any indirect or consequential damages</li>
+                    <li>Our liability is limited to the maximum extent permitted by law</li>
+                </ul>
+            </div>
+
+            <div class="contact-section">
+                <h2>Contact Us</h2>
+                <p>
+                    If you have questions about these Terms of Service, please contact us:
+                </p>
+                <a href="mailto:legal@mailquell.com" class="contact-email">legal@mailquell.com</a>
+            </div>
+
+            <div class="last-updated">
+                <p>Last updated: <strong>January 2024</strong></p>
+                <p>These terms are effective immediately upon posting</p>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
