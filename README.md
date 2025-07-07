@@ -1,6 +1,6 @@
-# MailSift
+# MailQuell
 
-MailSift is a modern email management application that helps users organize, filter, and manage their emails efficiently. Built with Node.js and Express, it integrates with Google's Gmail API to provide a seamless email management experience.
+MailQuell is a modern email management application that helps users organize, filter, and manage their emails efficiently. Built with Node.js and Express, it integrates with Google's Gmail API to provide a seamless email management experience.
 
 ## Features
 
@@ -15,12 +15,12 @@ MailSift is a modern email management application that helps users organize, fil
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/anupammaiti10/MailSift.git
+git clone https://github.com/anupammaiti10/MailQuell.git
 ```
 
 2. Navigate to the project directory:
 ```bash
-cd MailSift
+cd MailQuell
 ```
 
 3. Install dependencies:
@@ -32,8 +32,7 @@ npm install
 ```
 CLIENT_ID=your_google_client_id
 CLIENT_SECRET=your_google_client_secret
-REDIRECT_URI=http://localhost:3000/auth/google/callback
-PORT=3000
+REDIRECT_URI=your_redirect_uri
 ```
 
 5. Start the application:
