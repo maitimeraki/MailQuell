@@ -15,7 +15,7 @@ const profileRoute = require("./routes/profile.route");
 app.set('view engine', 'ejs')
 app.use(cookieParser())
 app.use(cors({
-  origin:[ 'http://127.0.0.1:5500','http://localhost:3000/'],
+  origin:[ 'https://www.mailquell.com/','http://localhost:3000/'],
   methods: ['GET', 'POST', 'OPTIONS'],
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization","Accept"]

@@ -1,4 +1,4 @@
-let API_URL = 'http://localhost:3000';
+let API_URL = 'https://www.mailquell.com/';
 
 document.addEventListener('DOMContentLoaded', () => {
     const loginButton = document.getElementById('loginButton');
