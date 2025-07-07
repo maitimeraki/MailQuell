@@ -96,7 +96,7 @@ npm start
 ## Project Structure
 
 ```
-MailSift/
+MailQuell/
 ├── Backend/
 │   ├── controllers/     # Route controllers
 │   ├── middleware/      # Express middleware
