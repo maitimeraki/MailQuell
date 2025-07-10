@@ -1,5 +1,4 @@
 const express = require("express");
-const app = express();
 const path = require("path");
 const { google } = require("googleapis");
 const session = require("express-session");
@@ -7,15 +6,18 @@ const dotenv = require("dotenv");
 var cookieParser = require('cookie-parser')
 var cors = require("cors");
 const { auth } = require("google-auth-library");
-dotenv.config();
 const authenticationRoute = require("./routes/authentication.route");
 const userRoute = require("./routes/user.route");
 const tagsRoute = require('./routes/tagRoute.route');
 const profileRoute = require("./routes/profile.route");
+
+const app = express();
+dotenv.config();
+
 app.set('view engine', 'ejs')
 app.use(cookieParser())
 app.use(cors({
-  origin:[ 'https://www.mailquell.com/','http://localhost:3000/'],
+  origin:[ 'https://www.mailquell.com/',"https://mailquell.com/" ],
   methods: ['GET', 'POST', 'OPTIONS'],
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization","Accept"]

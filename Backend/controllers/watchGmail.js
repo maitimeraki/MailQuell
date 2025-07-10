@@ -4,7 +4,7 @@ const oAuth2Client = require('../controllers/oAuthClient');
 // Watch Gmail function
 module.exports.watchGmail = async (auth) => {
     const gmail = google.gmail({ version: "v1", auth:auth });
-    const topicName = `projects/${process.env.PROJECT_ID}/topics/${process.env.TOPIC_NAME}`;
+    const topicName = `projects/${process.env.GMAIL_PROJECT_ID}/topics/${process.env.TOPIC_NAME}`;
 
     try {
         // First, stop any existing watch

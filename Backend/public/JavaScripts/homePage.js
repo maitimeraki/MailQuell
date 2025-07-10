@@ -1,49 +1,49 @@
 const addButton = document.getElementsByClassName("add-button");
 const rightDiv = document.getElementsByClassName("right");
-const faviconName=document.getElementById('favicon-name');
+const faviconName = document.getElementById('favicon-name');
 let tags = [];
- 
+
 const sendTagsToBackend = async () => {
   try {
-      const storedTags = JSON.parse(localStorage.getItem("tags"));
-      if (!storedTags || storedTags.length === 0) {
-          console.log("No tags to process");
-          return;
-      }
-      console.log("Sending tags to backend:", storedTags); // Debug log
-      const response = await fetch("http://localhost:3000/tags/processTags", {
-          method: "POST",
-          headers:{
-            "Content-Type": "application/json"
-            
-        },
-          body: JSON.stringify({ tags: storedTags }),
-          credentials: 'include',
-          
-      });
+    const storedTags = JSON.parse(localStorage.getItem("tags"));
+    if (!storedTags || storedTags.length === 0) {
+      console.log("No tags to process");
+      return;
+    }
+    console.log("Sending tags to backend:", storedTags); // Debug log
+    const response = await fetch(`${process.env.API_URL}/tags/processTags`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
 
-      if (!response.ok) {                   
-          throw new Error(`HTTP error! status: ${response.status}`);                               
-      }
+      },
+      body: JSON.stringify({ tags: storedTags }),
+      credentials: 'include',
 
-      const data = await response.json();
-      console.log("Response from server:", data); // Debug log
+    });
 
-      if (data.success) {
-          console.log("Tags processed successfully");
-          return true;
-      } else {
-          console.error("Server returned error:", data.message);
-          return false;
-      }
-  } catch (error) {
-      console.error("Error in sendTagsToBackend:", error);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("Response from server:", data); // Debug log
+
+    if (data.success) {
+      console.log("Tags processed successfully");
+      return true;
+    } else {
+      console.error("Server returned error:", data.message);
       return false;
+    }
+  } catch (error) {
+    console.error("Error in sendTagsToBackend:", error);
+    return false;
   }
 };
 
 faviconName.addEventListener('click', () => {
-  window.location.href='/home';
+  window.location.href = '/home';
 });
 addButton[0].addEventListener("click", function () {
   let tagsContainer = document.createElement("div");
@@ -62,7 +62,7 @@ addButton[0].addEventListener("click", function () {
       let tagValue = this.value.trim();
       if (event.key === "Enter" || event.key === ",") {
         event.preventDefault();
-        if (event.key === ",") {               
+        if (event.key === ",") {
           tagValue = tagValue.slice(0, -1).trim();
         }
         if (tagValue && !tags.includes(tagValue)) {
@@ -89,7 +89,7 @@ addButton[0].addEventListener("click", function () {
       if (trimmedTag && !tags.includes(trimmedTag)) {
         tags.push(trimmedTag);
       }
-    await showTags(tagsContainer, textarea);
+      await showTags(tagsContainer, textarea);
     });
   });
   // localStorage.setItem('tags', JSON.stringify(tags));
@@ -107,7 +107,7 @@ async function showTags(tagContainer, textarea) {
       let tagElement = document.createElement("div");
       tagElement.classList.add("tag");
       tagElement.innerHTML = `${tagText} <span class="tag-close">&times;</span>`;
-      
+
       let closeTag = tagElement.querySelector(".tag-close");
       closeTag.classList.add("tag-close");
       closeTag.addEventListener("click", async function () {
