@@ -21,7 +21,7 @@ async function initiateLogin() {
     showLoading(true);
     try {
          
-        window.location.href = `${process.env.API_URL}/users/auth`;
+        window.location.href = `https://mailquell.com/users/auth`;
         
     } catch (error) {
         console.error('Login failed:', error);
