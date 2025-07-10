@@ -1,5 +1,3 @@
-let API_URL = 'https://www.mailquell.com/';
-
 document.addEventListener('DOMContentLoaded', () => {
     const loginButton = document.getElementById('loginButton');
     const status = document.getElementById('status');
@@ -23,7 +21,7 @@ async function initiateLogin() {
     showLoading(true);
     try {
          
-        window.location.href = `${API_URL}/users/auth`;
+        window.location.href = `${process.env.API_URL}/users/auth`;
         
     } catch (error) {
         console.error('Login failed:', error);
