@@ -5,7 +5,6 @@
   "scripts": {
     "start": "node server.js",
     "dev": "npx nodemon server.js",
-    "build": "echo 'No build step for backend'",
     "test": "jest",
     "lint": "eslint .",
     "prod": "NODE_ENV=production node server.js"
