@@ -21,7 +21,7 @@ async function initiateLogin() {
     showLoading(true);
     try {
         console.log( window.ENV.FRONTEND_URL);
-        window.location.href = window.ENV.FRONTEND_URL;
+        window.location.href = `${window.ENV.FRONTEND_URL}/users/auth`;
         
     } catch (error) {
         console.error('Login failed:', error);
