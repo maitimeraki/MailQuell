@@ -50,8 +50,8 @@ app.use(session({
 }));
 
 app.get('/', (req, res) => {
-  res.json({
-    message: "Welcome to MailSift Backend API"
+  res.send({
+    message: "Welcome to MailQuell Backend API"
   })
 });
 
