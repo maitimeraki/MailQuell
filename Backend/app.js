@@ -51,11 +51,11 @@ app.use(session({
   }
 }));
 
-// app.get('/', (req, res) => {
-//   res.send({
-//     message: "Welcome to MailQuell Backend API"
-//   })
-// });
+app.get('/', (req, res) => {
+  res.send({
+    message: "Welcome to MailQuell Backend API"
+  })
+});
 
 app.use(profileRoute);
 app.use('/users', authenticationRoute);
