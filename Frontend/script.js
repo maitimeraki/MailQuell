@@ -15,12 +15,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     loginButton.addEventListener('click', initiateLogin);
-});
+});                                          
 
 async function initiateLogin() {
     showLoading(true);
     try {
-        console.log( window.ENV.FRONTEND_URL);
+        console.log( window.ENV.FRONTEND_URL); 
         window.location.href = `${window.ENV.FRONTEND_URL}/users/auth`;
         
     } catch (error) {
@@ -33,7 +33,7 @@ async function initiateLogin() {
 function showStatus(message, type) {
     const status = document.getElementById('status');
     status.textContent = message;
-    status.className = `status ${type}`;
+    status.className = `status ${type}`;     
 }
 
 function showLoading(show) {

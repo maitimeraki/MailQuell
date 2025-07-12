@@ -11,7 +11,7 @@ const sendTagsToBackend = async () => {
       return;
     }
     console.log("Sending tags to backend:", storedTags); // Debug log
-    const response = await fetch(`${process.env.API_URL}/tags/processTags`, {
+    const response = await fetch(`${process.env.FRONTEND_URL}/tags/processTags`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json"

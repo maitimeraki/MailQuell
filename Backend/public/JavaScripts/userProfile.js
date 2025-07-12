@@ -4,7 +4,7 @@ const profileName = document.getElementsByClassName("username")[0];
 const mainContainer = document.getElementById("mainContainer");
 // const profileDropdownContainer = document.getElementById("profilePic");
 (async function () {
-    await fetch(`${process.env.API_URL}/details/profile`).then((response) => response.json()).then((profile) => {
+    await fetch(`${process.env.FRONTEND_URL}/details/profile`).then((response) => response.json()).then((profile) => {
         if (profile.picture) {
             profilePic.src = profile.picture;
             profilePic.alt = `${profile.name}'s profile picture`;

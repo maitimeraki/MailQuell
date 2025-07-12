@@ -9,11 +9,11 @@ const watchGmailHandler = require("../middlewares/watchGmailHandler");
 router.get("/auth", (req, res) => {
   try {               
     
-    // Add state parameter        
+    // Add state parameter                 
     const state = Math.random().toString(36).substring(7);
     req.session.oauthState = state; 
     const authUrl = oAuth2Client.generateAuthUrl({
-      access_type: "offline",
+      access_type: "offline",                     
       scope: [
         'https://www.googleapis.com/auth/gmail.readonly',
         'https://www.googleapis.com/auth/gmail.modify',
@@ -70,7 +70,7 @@ router.get("/auth/google/callback", async (req, res, next) => {
     // Save tokens to file
     // await fs.writeFile("../token.json", JSON.stringify(tokens));
     req.session.token=JSON.stringify(tokens);
-    req.session.save();
+    req.session.save();                      
     next();
 
   } catch (error) {
