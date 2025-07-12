@@ -1,9 +1,14 @@
 {
-  "name": "MailSift",
+  "name": "MailQuell",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "start": "npx nodemon server.js"
+    "start": "node server.js",
+    "dev": "npx nodemon server.js",
+    "build": "echo 'No build step for backend'",
+    "test": "jest",
+    "lint": "eslint .",
+    "prod": "NODE_ENV=production node server.js"
   },
   "keywords": [],
   "author": "Anupam Maiti",
@@ -17,10 +22,14 @@
     "dotenv": "^16.4.7",
     "ejs": "^3.1.10",
     "express": "^4.21.2",
+    "express-mongo-sanitize": "^2.2.0",
     "express-session": "^1.18.1",
     "fs": "^0.0.1-security",
     "google-auth-library": "^9.15.1",
     "googleapis": "^144.0.0",
-    "path": "^0.12.7"
+    "helmet": "^8.1.0",
+    "morgan": "^1.10.0",
+    "path": "^0.12.7",
+    "xss-clean": "^0.1.4"
   }
 }

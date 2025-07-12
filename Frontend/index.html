@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MailQuell</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div class="container">
         <div class="login-card">
@@ -14,18 +16,25 @@
             </div>
             <h1>Gmail Manager</h1>
             <p class="subtitle">Manage your emails efficiently</p>
-            
+
             <button id="loginButton" class="login-button">
-                <img src="https://w7.pngwing.com/pngs/882/225/png-transparent-google-logo-google-logo-google-search-icon-google-text-logo-business-thumbnail.png" alt="Google Logo">
+                <img src="https://w7.pngwing.com/pngs/882/225/png-transparent-google-logo-google-logo-google-search-icon-google-text-logo-business-thumbnail.png"
+                    alt="Google Logo">
                 Sign in with Google
-            </button>              
+            </button>
 
             <div id="status" class="status"></div>
             <div id="loading" class="loading hidden">
                 <div class="spinner"></div>
-            </div>      
+            </div>
         </div>
     </div>
     <script src="script.js"></script>
+    <script>
+        window.ENV = {
+            FRONTEND_URL: "https://mailquell.com/"
+        };
+    </script>
 </body>
+
 </html>
