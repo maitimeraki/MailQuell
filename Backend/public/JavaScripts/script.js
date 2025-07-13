@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
 async function initiateLogin() {
     showLoading(true);
     try {
-        console.log(process.env.FRONTEND_URL); 
+        // console.log(process.env.FRONTEND_URL); 
         window.location.href = "https://mailquell.com/users/auth";
         
     } catch (error) {
