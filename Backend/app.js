@@ -23,7 +23,7 @@ app.set('view engine', 'ejs')
 app.use(cookieParser())
 
 app.use(cors({
-  origin: [process.env.FRONTEND_URL],
+  origin: ["https://mailquell.com"],
   methods: ['GET', 'POST', 'OPTIONS'],
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization", "Accept"]
