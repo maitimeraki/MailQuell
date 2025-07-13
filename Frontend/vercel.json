@@ -1,0 +1,16 @@
+{
+  "rewrites": [
+    {
+      "source": "/users/(.*)",
+      "destination": "https://mail-quell-frontend.vercel.app/users/$1"
+    },
+    {
+      "source": "/tags/(.*)",
+      "destination": "https://mail-quell-frontend.vercel.app/tags/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "https://mail-quell-frontend.vercel.app/$1"
+    }
+  ]
+}
