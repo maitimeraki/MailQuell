@@ -3,7 +3,7 @@ import fetch from 'node-fetch';
 
 global.fetch = jest.fn();
 
-const mockLocation = new URL(process.env.API_URL);
+const mockLocation = new URL(process.env.FRONTEND_URL);
 Object.defineProperty(window, 'location', {
     value: mockLocation,
     writable: true
