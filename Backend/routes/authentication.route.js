@@ -34,7 +34,6 @@ router.get("/auth", (req, res) => {
     // }
 
     console.log("Auth initiated with state:", state);
-    req.session.save(); 
     res.redirect(authUrl);
   } catch (e) {
     console.error("Auth error:", e);
