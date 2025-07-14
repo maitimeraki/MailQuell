@@ -52,9 +52,9 @@ app.use(session({
   }
 }));
 
-app.get('/', (req, res) => {
-  res.render("index")
-});
+// app.get('/', (req, res) => {
+//   res.render("index")
+// });
 
 app.use(profileRoute);
 app.use('/users', authenticationRoute);
