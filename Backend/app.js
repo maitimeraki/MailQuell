@@ -27,7 +27,7 @@ app.use(cookieSession({
   name: 'session',
   keys: [process.env.SESSION_SECRET],
   maxAge: 24 * 60 * 60 * 1000,
-  secure: true,
+  secure: process.env.NODE_ENV === 'production',
   httpOnly: true,
 }));
 
@@ -50,16 +50,16 @@ app.use(mongoSanitize());                // Prevent NoSQL injection
 app.use(morgan('combined'));
 
 // Add session middleware
-app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: true,
-  cookie: {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
-  }
-}));
+// app.use(session({
+//   secret: process.env.SESSION_SECRET,
+//   resave: false,
+//   saveUninitialized: true,
+//   cookie: {
+//     httpOnly: true,
+//     secure: process.env.NODE_ENV === 'production',
+//     maxAge: 24 * 60 * 60 * 1000 // 24 hours
+//   }
+// }));
 
 // app.get('/', (req, res) => {
 //   res.render("index")
