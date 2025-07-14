@@ -4,6 +4,7 @@ const { google } = require("googleapis");
 const session = require("express-session");
 const dotenv = require("dotenv");
 var cookieParser = require('cookie-parser')
+const cookieSession = require("cookie-session");
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xssClean = require('xss-clean');
@@ -21,6 +22,14 @@ dotenv.config();
 
 app.set('view engine', 'ejs')
 app.use(cookieParser())
+
+app.use(cookieSession({
+  name: 'session',
+  keys: [process.env.SESSION_SECRET],
+  maxAge: 24 * 60 * 60 * 1000,
+  secure: true,
+  httpOnly: true,
+}));
 
 app.use(cors({
   origin: ["https://mailquell.com"],
