@@ -41,11 +41,11 @@ router.get("/auth", (req, res) => {
   }
 });
 
-// Add ToS acceptance endpoint
-router.post("/accept-tos", (req, res) => {
-  req.session.tosAccepted = true;
-  res.json({ success: true });
-});
+// // Add ToS acceptance endpoint
+// router.post("/accept-tos", (req, res) => {
+//   req.session.tosAccepted = true;
+//   res.json({ success: true });
+// });
 
 // Callback handler
 router.get("/auth/google/callback", async (req, res, next) => {
