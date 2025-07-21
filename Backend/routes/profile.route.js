@@ -16,4 +16,16 @@ router.get('/details/profile', async (req, res) => {
     }
 }
 )
+router.get("/terms.html",async (req,res)=>{
+    return res.json({
+        success: true,
+        message: "Terms and conditions accepted"
+    })                             
+})
+router.get("/privacy.html",async (req,res)=>{
+    return res.json({
+        success: true,
+        message: "Terms and conditions accepted"
+    })                             
+})
 module.exports = router;

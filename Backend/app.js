@@ -32,7 +32,7 @@ app.use(cookieParser())
 // }));
 
 app.use(cors({
-  origin: ["https://mailquell.com"],
+  origin: ["https://mailquell.com", "http://localhost:3000"],
   methods: ['GET', 'POST', 'OPTIONS'],
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization", "Accept"]
@@ -61,9 +61,6 @@ app.use(session({
   }
 }));
 
-// app.get('/', (req, res) => {
-//   res.render("index")
-// });
 
 app.use(profileRoute);
 app.use('/users', authenticationRoute);
