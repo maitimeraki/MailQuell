@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 module.exports = {
   installed: {
     "client_id": process.env.GMAIL_CLIENT_ID,

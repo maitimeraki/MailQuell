@@ -15,7 +15,6 @@ module.exports.watchGmail = async (auth) => {
         } catch (stopError) {
             console.log('No existing watch to stop');
         }
-
         // Set up new watch specifically for INBOX
         const response = await gmail.users.watch({
             userId: "me",
@@ -25,7 +24,6 @@ module.exports.watchGmail = async (auth) => {
                 topicName: topicName,
             },
         });
-
         return response.data;
     } catch (error) {
         console.error("Error setting up Gmail watch:", error.response);
