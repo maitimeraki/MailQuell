@@ -12,7 +12,7 @@ router.get('/details/profile', async (req, res) => {
         res.json(profile);
     } catch (error) {
         console.error("Error fetching to profile data:", error.message);
-        res.status(404).json({ error: error.message });
+        res.status(404).json({ error: error.message });           
     }
 }
 )

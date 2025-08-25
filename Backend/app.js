@@ -1,27 +1,27 @@
-const express = require("express");
 const path = require("path");
-const { google } = require("googleapis");
-const session = require("express-session");
-const dotenv = require("dotenv");
-var cookieParser = require('cookie-parser')
-const cookieSession = require("cookie-session");
-const helmet = require('helmet');
-const mongoSanitize = require('express-mongo-sanitize');
-const xssClean = require('xss-clean');
 const cors = require('cors');
 const morgan = require('morgan');
+const helmet = require('helmet');
+const dotenv = require("dotenv");
+const express = require("express");
+const xssClean = require('xss-clean');
+const { google } = require("googleapis");
+const session = require("express-session");
+var cookieParser = require('cookie-parser')
+const cookieSession = require("cookie-session");
 const { auth } = require("google-auth-library");
-const authenticationRoute = require("./routes/authentication.route");
+const mongoSanitize = require('express-mongo-sanitize');
+
 const userRoute = require("./routes/user.route");
 const tagsRoute = require('./routes/tagRoute.route');
 const profileRoute = require("./routes/profile.route");
-
+const authenticationRoute = require("./routes/authentication.route");
 
 const app = express();
 dotenv.config();
 
+app.use(cookieParser());
 app.set('view engine', 'ejs')
-app.use(cookieParser())
 
 // app.use(cookieSession({
 //   name: 'session',
@@ -32,7 +32,7 @@ app.use(cookieParser())
 // }));
 
 app.use(cors({
-  origin: ["https://mailquell.com", "http://localhost:3000"],
+  origin: ["http://localhost:3000", "http://localhost:5173"], // Whatever you put frontend url in the .env file that should go here, by chance if put "http://localhost:5173/" instead of "http://localhost:5173"(In the .env file have url "http://localhost:5173")then must have whatever in the .env file
   methods: ['GET', 'POST', 'OPTIONS'],
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization", "Accept"]
@@ -60,7 +60,6 @@ app.use(session({
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));
-
 
 app.use(profileRoute);
 app.use('/users', authenticationRoute);
