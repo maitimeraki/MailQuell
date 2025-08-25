@@ -6,14 +6,14 @@ async function profileData(req, res) {
         // ../../ navigates two directories up, which takes you to MailSift.
         // const tokenPath = path.resolve(__dirname, '../../token.json');
         // const tokenData = await fs.readFile(tokenPath, "utf-8");
-        const tokenData = req.session.token;
+        const tokenData = req.cookies["auth_token"];
         if (!tokenData) {
-            console.error("Token not found in session");
+            console.error("Token not found in cookies");
             return res.status(401).send("Unauthorized: No token found");
         }
-        const token = JSON.parse(tokenData);
-        const access_token = token.access_token;
-        console.log("Access Token:", access_token);
+        const access_token = JSON.parse(tokenData);
+        // const access_token = token.access_token;
+        console.log("Access Token:", access_token);                  
         const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
             methods: 'GET',
             headers: {

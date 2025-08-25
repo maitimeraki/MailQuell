@@ -9,11 +9,11 @@ const watchGmailHandler = require("../middlewares/watchGmailHandler");
 router.get("/auth", (req, res) => {
   try {               
     
-    // Add state parameter                 
+    // Add state parameter        
     const state = Math.random().toString(36).substring(7);
     req.session.oauthState = state; 
     const authUrl = oAuth2Client.generateAuthUrl({
-      access_type: "offline",                     
+      access_type: "offline",
       scope: [
         'https://www.googleapis.com/auth/gmail.readonly',
         'https://www.googleapis.com/auth/gmail.modify',
@@ -24,15 +24,8 @@ router.get("/auth", (req, res) => {
         'https://www.googleapis.com/auth/userinfo.email openid'
       ],
       state: state,
-      prompt: "consent",
-      include_granted_scopes: true
+      prompt: "consent"
     });
-
-    // Check if user has accepted ToS
-    // if (!req.session.tosAccepted) {
-    //   return res.redirect('/terms.html?redirect=' + encodeURIComponent(authUrl));
-    // }
-
     console.log("Auth initiated with state:", state);
     res.redirect(authUrl);
   } catch (e) {
@@ -40,12 +33,6 @@ router.get("/auth", (req, res) => {
     res.status(500).send("Authentication failed");
   }
 });
-
-// // Add ToS acceptance endpoint
-// router.post("/accept-tos", (req, res) => {
-//   req.session.tosAccepted = true;
-//   res.json({ success: true });
-// });
 
 // Callback handler
 router.get("/auth/google/callback", async (req, res, next) => {
@@ -68,15 +55,21 @@ router.get("/auth/google/callback", async (req, res, next) => {
     oAuth2Client.setCredentials(tokens);
     console.log("Tokens received:", oAuth2Client?.credentials); // Log the received tokens
     // Save tokens to file
-    // await fs.writeFile("../token.json", JSON.stringify(tokens));
-    req.session.token=JSON.stringify(tokens);
-    req.session.save();                      
-    next();
-
+    // await fs.writeFile("../token.json", JSON.stringify(tokens)); 
+    req.session.token=JSON.stringify(tokens);                     
+    req.session.save();
+    res.cookie("auth_token",JSON.stringify(tokens.access_token),{
+      httpOnly:true,
+      secure:true,
+      sameSite: "lax",  // helps prevent CSRF
+      maxAge: tokens.expiry_date ? tokens.expiry_date - Date.now() : 3600000 // expiry
+    });
+    // next();
+    res.redirect(`${process.env.FRONTEND_URL}/dashboard`);    //res.location()
   } catch (error) {
-    console.error('Auth Error:', error.response);
+    console.error("Auth Error:", error.response);
     res.status(400).send(error.message);
   }
-}, watchGmailHandler.watchGmailHandler);
+});
 
 module.exports = router;
