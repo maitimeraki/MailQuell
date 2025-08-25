@@ -14,18 +14,16 @@ const mainContainer = document.getElementById("mainContainer");
             initialCircle.className = 'profile-initial';
             initialCircle.textContent = profile.name?.charAt(0).toUpperCase();
             profilePic.parentNode.insertBefore(initialCircle, profilePic);
-
         }
         profileName.innerText = profile.name;
+        
         if (mainContainer !== null) {
             profileDropdown(mainContainer, profile);
         }
-
     }).catch((error) => {
         console.error('Error fetching of profile data:', error.message); // Debug log
         throw error;
     });
-
 })();
 function profileDropdown(container, profile) {
     const dropdownMenu = document.createElement('div');
