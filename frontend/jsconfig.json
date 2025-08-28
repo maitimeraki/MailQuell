@@ -1,0 +1,11 @@
+{
+  "files": ["./src/**/*.{js,jsx,ts,tsx}"],
+  "references": [
+  ],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}
