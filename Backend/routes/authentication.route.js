@@ -65,7 +65,7 @@ router.get("/auth/google/callback", async (req, res, next) => {
       maxAge: tokens.expiry_date ? tokens.expiry_date - Date.now() : 3600000 // expiry
     });
     // next();
-    res.redirect(`${process.env.FRONTEND_URL}/dashboard`);    //res.location()
+    res.redirect(`${process.env.FRONTEND_URL}/mail`);    //res.location()
   } catch (error) {
     console.error("Auth Error:", error.response);
     res.status(400).send(error.message);
