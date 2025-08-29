@@ -52,3 +52,5 @@ module.exports.maintainWatch = async (auth, initialTags) => {
         throw error;
     }
 }
+
+module.exports.activeWatches = () => activeWatches;

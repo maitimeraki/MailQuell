@@ -2,7 +2,8 @@ const fs = require("fs").promises;
 const path = require("path");
 const watchGmail = require("../controllers/watchGmail");
 const oAuth2Client = require("../controllers/oAuthClient");
-const {maintainWatch} =require("../utils/maintainWatch");
+const {maintainWatch,activeWatches} =require("../utils/maintainWatch");
+ 
 // const tagsControllers = require("../controllers/tags.controllers");
 // const { updateTags, activeTags } = require("../service/updateTags");
 // // Store active watches and their associated tags
@@ -86,19 +87,20 @@ module.exports.watchGmailHandler = async (req, res) => {
         });
         await maintainWatch( oAuth2Client, tags);
 
-        return res.redirect('/home');
+        // return res.redirect('/home');
     } catch (error) {
         console.error("Error watching Gmail:", error.message);
         res.status(500).send("Failed to initiate watch.");
     }
 };
 
+
 // Cleanup function for when user logs out
-// module.exports.stopWatch = (userId) => {
-//   const watchInterval = activeWatches.get(userId);
-//   if (watchInterval) {
-//       clearInterval(watchInterval);
-//       activeWatches.delete(userId);
-//       console.log(`Stopped watching for user ${userId}`);
-//   }
-// };
+module.exports.stopWatchHandler = (userId) => {
+  const watchInterval = activeWatches.get(userId);
+  if (watchInterval) {
+      clearInterval(watchInterval);
+      activeWatches.delete(userId);
+      console.log(`Stopped watching for user ${userId}`);
+  }
+};
