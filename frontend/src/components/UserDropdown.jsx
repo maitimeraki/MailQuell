@@ -6,7 +6,8 @@ export function UserDropdown({ profile, open, onClose, onSignOut }) {
   const [loadingWatch, setLoadingWatch] = useState(false);
   async function toggleWatch(next) {
     setWatching(next);
-    loadingWatch(true);
+    if(!next) return ;
+    setLoadingWatch(true);
     try {
       const res = await fetch(
         `${import.meta.env.VITE_BACKEND_URL}/watch-gmail`,          
@@ -23,7 +24,7 @@ export function UserDropdown({ profile, open, onClose, onSignOut }) {
     } catch (e) {
       console.error("Failed to toggle watch:", e);
       setWatching(!next); // revert on failure
-    } finally {
+    }finally{
       setLoadingWatch(false);
     }
   }
@@ -119,7 +120,7 @@ export function UserDropdown({ profile, open, onClose, onSignOut }) {
             </span>
           </div>
           <Switch
-            disabled={loadingWatch}
+            // disabled={loadingWatch}
             checked={watching}
             onCheckedChange={toggleWatch}
           />

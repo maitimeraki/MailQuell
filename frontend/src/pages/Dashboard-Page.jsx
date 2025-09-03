@@ -3,9 +3,10 @@ import { useProfile } from "@/hooks/useProfile";
 import { Navbar } from "@/components/Navbar";
 import { navGroups } from "../utils/navGroups";
 import { NavLink, Outlet } from "react-router";
-// import TagsPage from "./Tags-Page";
+import { useAutoLogin } from "../hooks/useAutoLogin";
 
 export function Dashboard() {
+  useAutoLogin();
   // const [noTagsPage, setNoTagsPage] = useState(0);
   const groups = navGroups();
   const centerStyle = {
@@ -44,12 +45,11 @@ export function Dashboard() {
     transition: "background .16s, color .16s, border .16s",
   };
   const center = {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    height: '100vh', // Adjust height as needed
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    height: "100vh", // Adjust height as needed
   };
-
 
   const { profile, loading, error } = useProfile();
 
@@ -65,9 +65,6 @@ export function Dashboard() {
     }
   }
 
-  // const loadNextPage = () => {
-  //   setNoTagsPage((prev) => prev + 1);
-  // };
   useEffect(() => {
     const styleEl = document.createElement("style");
     styleEl.setAttribute("data-hide-scrollbar", "true");
@@ -92,15 +89,17 @@ export function Dashboard() {
   if (!profile) return <div style={center}>No profile</div>;
 
   return (
-     <div style={{ display: "flex", minHeight: "100vh", flexDirection: "column" }}>
-      <Navbar profile={profile} onSignOut={() => signOut()} />
+    <div
+      style={{ display: "flex", minHeight: "100vh", flexDirection: "column" }}
+    >
+      <Navbar profile={profile} onSignOut={() => handleSignOut()} />
       <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
         <aside style={asideStyle}>
-          {groups.map(g => (
+          {groups.map((g) => (
             <div key={g.label}>
               <div style={groupLabel}>{g.label}</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                {g.items.map(item => (
+                {g.items.map((item) => (
                   <NavLink
                     key={item.to}
                     to={item.to}
@@ -108,7 +107,7 @@ export function Dashboard() {
                       ...navItem,
                       background: isActive ? "#2563eb" : "transparent",
                       color: isActive ? "#fff" : "#1f2937",
-                      borderColor: isActive ? "#2563eb" : "#e2e8f0"
+                      borderColor: isActive ? "#2563eb" : "#e2e8f0",
                     })}
                   >
                     <i className={item.icon} />

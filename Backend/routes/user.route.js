@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { watchGmailHandler, stopWatchHandler } = require("../middlewares/watchGmailHandler");
+const {autoLogin} = require("../utils/autoLogin");
+
 
 router.post('/log-out', (req, res) => {
   req.session.destroy(err => {
@@ -28,4 +30,17 @@ router.post("/watch-gmail", async (req, res) => {
       res.status(500).json({ ok: false, error: "Watch toggle failed" });
   }
 })
+router.post("/auto-login",async (req,res,next)=>{
+  try{
+
+    await autoLogin(req,res,next);
+  }catch(e){
+    console.error("Error in /auto-login:", e);
+    if (!res.headersSent)
+      res.status(500).json({ ok: false, error: "Watch toggle failed" });
+  }
+})
+
+
+
 module.exports = router;
