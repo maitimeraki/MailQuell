@@ -14,7 +14,7 @@ export function TagChip({ text, onRemove }) {
       <button
         type="button"
         aria-label={`Remove ${text}`}
-        onClick={() => onRemove(text)}
+        onClick={() => onRemove()}
         className="rounded hover:bg-primary/20 p-0.5 transition"
       >
         <X className="h-3.5 w-3.5" />
