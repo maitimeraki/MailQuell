@@ -4,31 +4,58 @@ export function UserDropdown({ profile, open, onClose, onSignOut }) {
   const ref = useRef(null);
   const [watching, setWatching] = useState(false);
   const [loadingWatch, setLoadingWatch] = useState(false);
-  async function toggleWatch(next) {
-    setWatching(next);
-    if(!next) return ;
-    setLoadingWatch(true);
+  const [watchInfo, setWatchInfo] = useState(null);
+
+  async function fetchStatus() {
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/watch-gmail`,          
+        `${import.meta.env.VITE_BACKEND_URL}/integration/status`,
+        { credentials: "include" }
+      );
+      if (!res.ok) return;
+      const js = await res.json();
+      if (js.ok && js.status) {
+        setWatching(Boolean(js.status.watching));
+        setWatchInfo(js.status);
+      }
+    } catch (e) {
+      console.error("status fetch failed", e);
+    }
+  }
+
+  async function toggleWatch(next = true) {
+    setLoadingWatch(true);
+    try {
+      // Turn ON: start watching Gmail
+      const res = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/watch-gmail`,
         {
           method: "POST",
           credentials: "include",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ watching: next }),
+          body: JSON.stringify({
+            watching: !!next,
+            channelId: watchInfo?.watch?.channelId || null,
+            resourceId: watchInfo?.watch?.resourceId || null,
+            expiration:watchInfo?.watch?.expiration || null,
+            historyId :watchInfo?.watch?.historyId ||null,
+          }),
         }
       );
-      if (!res.ok) throw new Error("failed");                       
+      const js = await res.json();
+      if (res.ok && js.ok) {
+        setWatching(!!next);
+        await fetchStatus();
+      }
     } catch (e) {
       console.error("Failed to toggle watch:", e);
       setWatching(!next); // revert on failure
-    }finally{
+    } finally {
       setLoadingWatch(false);
     }
   }
-
   useEffect(() => {
     if (!open) return;
     function handler(e) {
@@ -120,11 +147,12 @@ export function UserDropdown({ profile, open, onClose, onSignOut }) {
             </span>
           </div>
           <Switch
-            // disabled={loadingWatch}
+            disabled={loadingWatch}
             checked={watching}
             onCheckedChange={toggleWatch}
           />
         </div>
+
         <button
           type="button"
           style={itemStyleBtn}
