@@ -4,14 +4,15 @@ const oAuth2Client = require('../controllers/oAuthClient');
 // Redirect for authentication     
 const { google } = require("googleapis");
 const fs = require("fs").promises;
-const { auth } = require("google-auth-library");
-const watchGmailHandler = require("../middlewares/watchGmailHandler");
-router.get("/auth", (req, res) => {
-  try {               
-    
-    // Add state parameter        
-    const state = Math.random().toString(36).substring(7);
-    req.session.oauthState = state; 
+// const { auth } = require("google-auth-library");
+// const { autoLogin } = require("../middlewares/autoLogin");
+// const watchGmailHandler = require("../middlewares/watchGmailHandler");
+router.get("/auth", async (req, res) => {
+  try {
+     
+    // Add state parameter to prevent CSRF attacks
+    const state = Math.random().toString(36).substring(7);          
+    req.session.oauthState = state;
     const authUrl = oAuth2Client.generateAuthUrl({
       access_type: "offline",
       scope: [
@@ -56,11 +57,11 @@ router.get("/auth/google/callback", async (req, res, next) => {
     console.log("Tokens received:", oAuth2Client?.credentials); // Log the received tokens
     // Save tokens to file
     // await fs.writeFile("../token.json", JSON.stringify(tokens)); 
-    req.session.token=JSON.stringify(tokens);                     
+    req.session.token = JSON.stringify(tokens);
     req.session.save();
-    res.cookie("auth_token",JSON.stringify(tokens.access_token),{
-      httpOnly:true,
-      secure:true,
+    res.cookie("auth_token", JSON.stringify(tokens.access_token), {
+      httpOnly: true,
+      secure: true,
       sameSite: "lax",  // helps prevent CSRF
       maxAge: tokens.expiry_date ? tokens.expiry_date - Date.now() : 3600000 // expiry
     });
