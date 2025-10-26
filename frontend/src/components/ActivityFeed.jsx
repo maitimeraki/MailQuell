@@ -1,5 +1,4 @@
 // ...existing code...
-<<<<<<< HEAD
 import React, { useEffect, useState, useMemo, useRef } from "react";
 
 /*
@@ -13,17 +12,11 @@ import React, { useEffect, useState, useMemo, useRef } from "react";
 
 
 export default function ActivityFeed({ limit = 500 }) {
-=======
-import React, { useEffect, useState } from "react";
-
-export default function ActivityFeed({ limit = 20 }) {
->>>>>>> 9550382a8e59c60e6142fafcd2b946dd2a9b5abb
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-<<<<<<< HEAD
-  
+
   // filters
   const [typeFilter, setTypeFilter] = useState("all");
   const [tagFilter, setTagFilter] = useState(null);
@@ -54,36 +47,24 @@ export default function ActivityFeed({ limit = 20 }) {
   //   let mounted = true;
   //   const ctrl = new AbortController();
 
-=======
-  // useEffect(() => {
-  //   let mounted = true;
->>>>>>> 9550382a8e59c60e6142fafcd2b946dd2a9b5abb
   //   async function load() {
   //     setLoading(true);
   //     setError(null);
   //     try {
   //       const url = new URL(`${import.meta.env.VITE_BACKEND_URL}/api/activity`);
-<<<<<<< HEAD
+
   //       url.searchParams.set("limit", String(limit));
   //       const res = await fetch(url.toString(), { credentials: "include", signal: ctrl.signal });
-=======
-  //       if (limit) url.searchParams.set("limit", String(limit));
-  //       const res = await fetch(url.toString(), { credentials: "include" });
->>>>>>> 9550382a8e59c60e6142fafcd2b946dd2a9b5abb
   //       if (!res.ok) throw new Error("Failed to load activity");
   //       const data = await res.json();
   //       if (mounted) setItems(Array.isArray(data) ? data : []);
   //     } catch (e) {
-<<<<<<< HEAD
   //       if (mounted && e.name !== "AbortError") setError(e.message);
-=======
-  //       if (mounted) setError(e.message);
->>>>>>> 9550382a8e59c60e6142fafcd2b946dd2a9b5abb
   //     } finally {
   //       if (mounted) setLoading(false);
   //     }
   //   }
-<<<<<<< HEAD
+
 
   //   load();
 
@@ -133,20 +114,20 @@ export default function ActivityFeed({ limit = 20 }) {
     for (const it of items) {
       (it.tags || []).forEach(t => { freq[t] = (freq[t] || 0) + 1; });
     }
-    return Object.entries(freq).map(([tag, count]) => ({ tag, count })).sort((a,b)=>b.count-a.count).slice(0,8);
+    return Object.entries(freq).map(([tag, count]) => ({ tag, count })).sort((a, b) => b.count - a.count).slice(0, 8);
   }, [items]);
 
   const timeline = useMemo(() => {
     const now = Date.now();
     const days = Math.max(1, Math.min(90, dateRangeDays));
     const buckets = {};
-    for (let i=0;i<days;i++){ const d=new Date(now - (days-1-i)*86400000).toISOString().slice(0,10); buckets[d]=0; }
+    for (let i = 0; i < days; i++) { const d = new Date(now - (days - 1 - i) * 86400000).toISOString().slice(0, 10); buckets[d] = 0; }
     for (const it of items) {
       const t = new Date(it.createdAt || it.ts || Date.now()).getTime();
-      const key = new Date(t).toISOString().slice(0,10);
+      const key = new Date(t).toISOString().slice(0, 10);
       if (key in buckets) buckets[key] += 1;
     }
-    return Object.entries(buckets).map(([day,count])=>({day,count}));
+    return Object.entries(buckets).map(([day, count]) => ({ day, count }));
   }, [items, dateRangeDays]);
 
   // filtered items list
@@ -163,14 +144,14 @@ export default function ActivityFeed({ limit = 20 }) {
   }, [items, typeFilter, tagFilter, search]);
 
   const pages = Math.max(1, Math.ceil(filtered.length / perPage));
-  const pageItems = filtered.slice((page-1)*perPage, page*perPage);
+  const pageItems = filtered.slice((page - 1) * perPage, page * perPage);
 
   // actions
   async function acknowledge(itemId) {
     try {
       const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/activity/${itemId}/acknowledge`, { method: "POST", credentials: "include" });
       if (!res.ok) throw new Error("ack failed");
-      setItems(prev => prev.map(i => i._id===itemId ? { ...i, status: "acknowledged" } : i));
+      setItems(prev => prev.map(i => i._id === itemId ? { ...i, status: "acknowledged" } : i));
     } catch (e) {
       console.error(e);
     }
@@ -179,7 +160,7 @@ export default function ActivityFeed({ limit = 20 }) {
     try {
       const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/activity/${itemId}/resolve`, { method: "POST", credentials: "include" });
       if (!res.ok) throw new Error("resolve failed");
-      setItems(prev => prev.map(i => i._id===itemId ? { ...i, status: "resolved" } : i));
+      setItems(prev => prev.map(i => i._id === itemId ? { ...i, status: "resolved" } : i));
     } catch (e) {
       console.error(e);
     }
@@ -200,7 +181,7 @@ export default function ActivityFeed({ limit = 20 }) {
   }
   function removeView(idx) {
     const arr = savedViews.slice();
-    arr.splice(idx,1);
+    arr.splice(idx, 1);
     setSavedViews(arr);
     localStorage.setItem("activity.views", JSON.stringify(arr));
   }
@@ -232,17 +213,17 @@ export default function ActivityFeed({ limit = 20 }) {
         </div>
 
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <select value={typeFilter} onChange={e=>{ setTypeFilter(e.target.value); setPage(1); }} style={{ padding: 8 }}>
+          <select value={typeFilter} onChange={e => { setTypeFilter(e.target.value); setPage(1); }} style={{ padding: 8 }}>
             <option value="all">All types</option>
             {types.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
 
-          <select value={tagFilter||""} onChange={e=>{ setTagFilter(e.target.value||null); setPage(1); }} style={{ padding: 8 }}>
+          <select value={tagFilter || ""} onChange={e => { setTagFilter(e.target.value || null); setPage(1); }} style={{ padding: 8 }}>
             <option value="">All tags</option>
             {topTags.map(t => <option key={t.tag} value={t.tag}>{t.tag} ({t.count})</option>)}
           </select>
 
-          <input placeholder="Search…" value={search} onChange={e=>{ setSearch(e.target.value); setPage(1); }} style={{ padding: 8 }} />
+          <input placeholder="Search…" value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} style={{ padding: 8 }} />
         </div>
       </header>
 
@@ -252,17 +233,17 @@ export default function ActivityFeed({ limit = 20 }) {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div style={{ color: "#6b7280", fontSize: 13 }}>Activity timeline ({dateRangeDays}d)</div>
               <div style={{ display: "flex", gap: 8 }}>
-                <select value={dateRangeDays} onChange={e=>setDateRangeDays(Number(e.target.value))} style={{ padding: 6 }}>
+                <select value={dateRangeDays} onChange={e => setDateRangeDays(Number(e.target.value))} style={{ padding: 6 }}>
                   <option value={7}>7d</option>
                   <option value={30}>30d</option>
                   <option value={90}>90d</option>
                 </select>
-                <button onClick={()=>{ setTypeFilter("all"); setTagFilter(null); setSearch(""); }} style={{ padding: 6 }}>Reset</button>
+                <button onClick={() => { setTypeFilter("all"); setTagFilter(null); setSearch(""); }} style={{ padding: 6 }}>Reset</button>
               </div>
             </div>
 
             <div style={{ marginTop: 8 }}>
-              <TimelineChart data={timeline} onBarClick={(day)=>{ /* optional drill-down */ }} />
+              <TimelineChart data={timeline} onBarClick={(day) => { /* optional drill-down */ }} />
             </div>
           </div>
 
@@ -271,8 +252,8 @@ export default function ActivityFeed({ limit = 20 }) {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                 <div style={{ fontSize: 14, color: "#374151" }}>Events</div>
                 <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  <button onClick={()=>setShowAlertForm(s=>!s)} style={{ padding: 6 }}>{showAlertForm ? "Close alert" : "Create alert"}</button>
-                  <button onClick={()=>saveView(prompt("Name for saved view")||`view-${Date.now()}`)} style={{ padding: 6 }}>Save view</button>
+                  <button onClick={() => setShowAlertForm(s => !s)} style={{ padding: 6 }}>{showAlertForm ? "Close alert" : "Create alert"}</button>
+                  <button onClick={() => saveView(prompt("Name for saved view") || `view-${Date.now()}`)} style={{ padding: 6 }}>Save view</button>
                 </div>
               </div>
 
@@ -282,22 +263,22 @@ export default function ActivityFeed({ limit = 20 }) {
               <ul style={{ listStyle: "none", padding: 0 }}>
                 {pageItems.map(it => (
                   <li key={it._id || it.id} style={{ padding: 12, marginBottom: 8, borderRadius: 8, background: "#fff", border: "1px solid #f3f4f6", cursor: "pointer" }}
-                      onClick={()=>setSelected(it)}>
+                    onClick={() => setSelected(it)}>
                     <div style={{ display: "flex", gap: 12 }}>
                       <div style={{ width: 44, height: 44, borderRadius: 8, background: "#eef2ff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "#0369a1" }}>
-                        {(it.actor||it.type||"S").charAt(0).toUpperCase()}
+                        {(it.actor || it.type || "S").charAt(0).toUpperCase()}
                       </div>
                       <div style={{ flex: 1 }}>
                         <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
                           <div>
                             <div style={{ fontWeight: 700 }}>{it.type ? it.type.toUpperCase() : "event"}</div>
                             <div style={{ color: "#6b7280", fontSize: 13 }}>{it.message || ""}</div>
-                            <div style={{ marginTop: 6 }}>{(it.tags||[]).slice(0,3).map(t=> <span key={t} style={{ marginRight:6, background:"#f1f5f9", padding:"4px 8px", borderRadius: 6 }}>{t}</span>)}</div>
+                            <div style={{ marginTop: 6 }}>{(it.tags || []).slice(0, 3).map(t => <span key={t} style={{ marginRight: 6, background: "#f1f5f9", padding: "4px 8px", borderRadius: 6 }}>{t}</span>)}</div>
                           </div>
                           <div style={{ textAlign: "right" }}>
                             <div style={{ fontSize: 12, color: "#9ca3af" }}>{it.actor || it.workspaceId || "system"}</div>
-                            <div style={{ fontSize: 12, color: "#9ca3af" }}>{new Date(it.createdAt||Date.now()).toLocaleString()}</div>
-                            <div style={{ marginTop: 6, fontSize: 12, color: it.status==="resolved" ? "green" : it.status==="acknowledged" ? "#d97706" : "#6b7280" }}>{it.status||"open"}</div>
+                            <div style={{ fontSize: 12, color: "#9ca3af" }}>{new Date(it.createdAt || Date.now()).toLocaleString()}</div>
+                            <div style={{ marginTop: 6, fontSize: 12, color: it.status === "resolved" ? "green" : it.status === "acknowledged" ? "#d97706" : "#6b7280" }}>{it.status || "open"}</div>
                           </div>
                         </div>
                       </div>
@@ -309,9 +290,9 @@ export default function ActivityFeed({ limit = 20 }) {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12 }}>
                 <div style={{ color: "#6b7280" }}>{filtered.length} results</div>
                 <div style={{ display: "flex", gap: 8 }}>
-                  <button onClick={()=>setPage(p=>Math.max(1,p-1))} disabled={page===1}>Prev</button>
+                  <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>Prev</button>
                   <div style={{ minWidth: 36, textAlign: "center" }}>{page}/{pages}</div>
-                  <button onClick={()=>setPage(p=>Math.min(pages,p+1))} disabled={page===pages}>Next</button>
+                  <button onClick={() => setPage(p => Math.min(pages, p + 1))} disabled={page === pages}>Next</button>
                 </div>
               </div>
             </div>
@@ -320,28 +301,28 @@ export default function ActivityFeed({ limit = 20 }) {
               <div style={{ padding: 12, borderRadius: 8, background: "#fff", border: "1px solid #eef2ff" }}>
                 <div style={{ fontWeight: 700, marginBottom: 8 }}>Top tags</div>
                 {topTags.map(t => (
-                  <div key={t.tag} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", cursor: "pointer" }} onClick={()=>{ setTagFilter(t.tag); setPage(1); }}>
+                  <div key={t.tag} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", cursor: "pointer" }} onClick={() => { setTagFilter(t.tag); setPage(1); }}>
                     <div style={{ color: "#374151" }}>{t.tag}</div>
                     <div style={{ color: "#6b7280" }}>{t.count}</div>
                   </div>
                 ))}
                 <hr style={{ margin: "8px 0" }} />
                 <div style={{ fontWeight: 700, marginBottom: 6 }}>Saved views</div>
-                {savedViews.length===0 && <div style={{ color:"#9ca3af" }}>No saved views</div>}
+                {savedViews.length === 0 && <div style={{ color: "#9ca3af" }}>No saved views</div>}
                 {savedViews.map((v, idx) => (
                   <div key={v.createdAt} style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 6 }}>
-                    <button onClick={()=>applyView(v)} style={{ flex: 1, textAlign: "left" }}>{v.name}</button>
-                    <button onClick={()=>removeView(idx)} style={{ color: "red" }}>✕</button>
+                    <button onClick={() => applyView(v)} style={{ flex: 1, textAlign: "left" }}>{v.name}</button>
+                    <button onClick={() => removeView(idx)} style={{ color: "red" }}>✕</button>
                   </div>
                 ))}
 
                 {showAlertForm && (
                   <div style={{ marginTop: 12 }}>
                     <div style={{ fontSize: 13, marginBottom: 6 }}>Create alert</div>
-                    <input type="number" value={alertThreshold} onChange={e=>setAlertThreshold(e.target.value)} style={{ width: "100%", padding: 8, marginBottom: 6 }} />
+                    <input type="number" value={alertThreshold} onChange={e => setAlertThreshold(e.target.value)} style={{ width: "100%", padding: 8, marginBottom: 6 }} />
                     <div style={{ display: "flex", gap: 6 }}>
                       <button onClick={createAlert} style={{ padding: 8 }}>Create</button>
-                      <button onClick={()=>setShowAlertForm(false)} style={{ padding: 8 }}>Cancel</button>
+                      <button onClick={() => setShowAlertForm(false)} style={{ padding: 8 }}>Cancel</button>
                     </div>
                   </div>
                 )}
@@ -358,12 +339,12 @@ export default function ActivityFeed({ limit = 20 }) {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
               <div style={{ fontWeight: 800 }}>{selected.type?.toUpperCase() || "event"}</div>
-              <div style={{ color: "#6b7280", fontSize: 13 }}>{new Date(selected.createdAt||Date.now()).toLocaleString()}</div>
+              <div style={{ color: "#6b7280", fontSize: 13 }}>{new Date(selected.createdAt || Date.now()).toLocaleString()}</div>
             </div>
             <div>
-              <button onClick={()=>acknowledge(selected._id)} style={{ marginRight: 8, padding: 8 }}>Acknowledge</button>
-              <button onClick={()=>resolveItem(selected._id)} style={{ padding: 8 }}>Resolve</button>
-              <button onClick={()=>setSelected(null)} style={{ marginLeft: 8, padding: 6 }}>Close</button>
+              <button onClick={() => acknowledge(selected._id)} style={{ marginRight: 8, padding: 8 }}>Acknowledge</button>
+              <button onClick={() => resolveItem(selected._id)} style={{ padding: 8 }}>Resolve</button>
+              <button onClick={() => setSelected(null)} style={{ marginLeft: 8, padding: 6 }}>Close</button>
             </div>
           </div>
 
@@ -378,7 +359,7 @@ export default function ActivityFeed({ limit = 20 }) {
 
             <div style={{ marginTop: 12 }}>
               <div style={{ fontWeight: 700 }}>Related</div>
-              {(selected.relatedIds || []).length===0 && <div style={{ color: "#9ca3af" }}>No related items</div>}
+              {(selected.relatedIds || []).length === 0 && <div style={{ color: "#9ca3af" }}>No related items</div>}
               {(selected.relatedIds || []).map(rid => <div key={rid} style={{ padding: 6, borderRadius: 6, background: "#fff", border: "1px solid #f3f4f6", marginTop: 6 }}>{rid}</div>)}
             </div>
           </div>
@@ -391,48 +372,16 @@ export default function ActivityFeed({ limit = 20 }) {
 
 // small timeline chart used above
 function TimelineChart({ data = [], height = 48, onBarClick }) {
-  const max = Math.max(...data.map(d=>d.count), 1);
+  const max = Math.max(...data.map(d => d.count), 1);
   const w = data.length * 6;
   return (
     <svg width="100%" height={height} viewBox={`0 0 ${w} ${height}`} preserveAspectRatio="none">
-      {data.map((d,i)=>{
-        const x = i*6;
+      {data.map((d, i) => {
+        const x = i * 6;
         const h = Math.round((d.count / max) * (height - 6));
-        return <rect key={d.day} x={x} y={height - h - 2} width={5} height={h} fill="#94a3b8" style={{ cursor: "pointer" }} onClick={()=>onBarClick && onBarClick(d.day)} />;
+        return <rect key={d.day} x={x} y={height - h - 2} width={5} height={h} fill="#94a3b8" style={{ cursor: "pointer" }} onClick={() => onBarClick && onBarClick(d.day)} />;
       })}
     </svg>
   );
 }
-=======
-  //   load();
-  //   return () => (mounted = false);
-  // }, [limit]);
-
-  return (
-    <div style={{ padding: 12, background: "#fff", border: "1px solid #eee", borderRadius: 8 }}>
-      <h3 style={{ margin: "0 0 8px 0" }}>Activity Feed</h3>
-      {loading && <div style={{ color: "#666" }}>Loading…</div>}
-      {error && <div style={{ color: "red" }}>Error: {error}</div>}
-      {!loading && items.length === 0 && <div style={{ color: "#666" }}>No activity yet.</div>}
-      <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-        {items.map((it) => (
-          <li key={it._id} style={{ padding: 10, borderBottom: "1px solid #f1f1f1" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
-              <div style={{ fontSize: 13 }}>
-                <strong style={{ color: "#222" }}>{it.type || "event"}</strong>
-                <div style={{ color: "#666", fontSize: 12 }}>{it.message}</div>
-                {it.meta && <div style={{ color: "#777", fontSize: 11, marginTop: 6 }}>{JSON.stringify(it.meta)}</div>}
-              </div>
-              <div style={{ textAlign: "right", minWidth: 120 }}>
-                <div style={{ fontSize: 12, color: "#666" }}>{it.actor || it.workspaceId || "system"}</div>
-                <div style={{ fontSize: 11, color: "#999" }}>{new Date(it.createdAt).toLocaleString()}</div>
-              </div>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
->>>>>>> 9550382a8e59c60e6142fafcd2b946dd2a9b5abb
 // ...existing code...

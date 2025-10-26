@@ -9,7 +9,6 @@ export function UserDropdown({ profile, open, onClose, onSignOut }) {
   async function fetchStatus() {
     try {
       const res = await fetch(
-<<<<<<< HEAD
         `${import.meta.env.VITE_BACKEND_URL}/status`,
         { credentials: "include" }
       );
@@ -70,51 +69,6 @@ export function UserDropdown({ profile, open, onClose, onSignOut }) {
     } catch (e) {
       console.error("Failed to toggle watch:", e);
       // Don't revert - keep current state since the operation failed
-=======
-        `${import.meta.env.VITE_BACKEND_URL}/integration/status`,
-        { credentials: "include" }
-      );
-      if (!res.ok) return;
-      const js = await res.json();
-      if (js.ok && js.status) {
-        setWatching(Boolean(js.status.watching));
-        setWatchInfo(js.status);
-      }
-    } catch (e) {
-      console.error("status fetch failed", e);
-    }
-  }
-
-  async function toggleWatch(next = true) {
-    setLoadingWatch(true);
-    try {
-      // Turn ON: start watching Gmail
-      const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/watch-gmail`,
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            watching: !!next,
-            channelId: watchInfo?.watch?.channelId || null,
-            resourceId: watchInfo?.watch?.resourceId || null,
-            expiration:watchInfo?.watch?.expiration || null,
-            historyId :watchInfo?.watch?.historyId ||null,
-          }),
-        }
-      );
-      const js = await res.json();
-      if (res.ok && js.ok) {
-        setWatching(!!next);
-        await fetchStatus();
-      }
-    } catch (e) {
-      console.error("Failed to toggle watch:", e);
-      setWatching(!next); // revert on failure
->>>>>>> 9550382a8e59c60e6142fafcd2b946dd2a9b5abb
     } finally {
       setLoadingWatch(false);
     }

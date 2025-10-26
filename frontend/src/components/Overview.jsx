@@ -1,14 +1,11 @@
-<<<<<<< HEAD
+
 import React, { useEffect, useState, useMemo, useRef } from "react";
-=======
-// ...existing code...
-import React, { useEffect, useState } from "react";
->>>>>>> 9550382a8e59c60e6142fafcd2b946dd2a9b5abb
+
 
 export default function Overview() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-<<<<<<< HEAD
+
   const [inputsList, setInputsList] = useState([]);
   const [recentMatches, setRecentMatches] = useState([]);
   const [watchInfo, setWatchInfo] = useState(null);
@@ -21,21 +18,10 @@ export default function Overview() {
   useEffect(() => {
     let mounted = true;
     const ctrl = new AbortController();
-=======
-  const [pagesCount, setPagesCount] = useState(0);
-  const [inputsCount, setInputsCount] = useState(0);
-  const [topPatterns, setTopPatterns] = useState([]);
-  const [watchInfo, setWatchInfo] = useState(null);
-  const [recentMatches, setRecentMatches] = useState([]);
-
-  useEffect(() => {
-    let mounted = true;
->>>>>>> 9550382a8e59c60e6142fafcd2b946dd2a9b5abb
     async function loadAll() {
       setLoading(true);
       setError(null);
       try {
-<<<<<<< HEAD
         // const base = import.meta.env.VITE_BACKEND_URL;
         // const [inputsRes, matchesRes, statusRes] = await Promise.all([
         //   fetch(`${base}/api/tag-inputs`, { credentials: "include", signal: ctrl.signal }),
@@ -59,66 +45,6 @@ export default function Overview() {
         }
       } catch (e) {
         if (mounted && e.name !== "AbortError") setError(String(e));
-=======
-        const base = `${import.meta.env.VITE_BACKEND_URL}/api`;
-
-        // Fire requests in parallel; backend should use session or accept createdBy query
-        const [pagesRes, inputsRes, statusRes, matchesRes] = await Promise.allSettled([
-          fetch(`${base}/tag-pages`, { credentials: "include" }),
-          fetch(`${base}/tag-inputs`, { credentials: "include" }),
-          fetch(`${base}/integration/status`, { credentials: "include" }),
-          // optional endpoint for recent matches; if not present it will fail gracefully
-          fetch(`${base}/email-matches?limit=6`, { credentials: "include" }),
-        ]);
-
-        // tag-pages
-        if (pagesRes.status === "fulfilled" && pagesRes.value.ok) {
-          const pages = await pagesRes.value.json();
-          if (mounted) setPagesCount(Array.isArray(pages) ? pages.length : 0);
-        } else {
-          if (pagesRes.status === "fulfilled" && pagesRes.value) {
-            // non-ok response
-            // ignore, backend may require createdBy; leave zero
-          }
-        }
-
-        // tag-inputs
-        let inputsList = [];
-        if (inputsRes.status === "fulfilled" && inputsRes.value.ok) {
-          const inputs = await inputsRes.value.json();
-          inputsList = Array.isArray(inputs) ? inputs : [];
-          if (mounted) setInputsCount(inputsList.length);
-        }
-
-        // compute top patterns
-        if (inputsList.length) {
-          const freq = inputsList.reduce((acc, it) => {
-            const key = (it.patternRaw || "").trim();
-            if (!key) return acc;
-            acc[key] = (acc[key] || 0) + 1;
-            return acc;
-          }, {});
-          const top = Object.entries(freq)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 5)
-            .map(([pattern, count]) => ({ pattern, count }));
-          if (mounted) setTopPatterns(top);
-        }
-
-        // integration/status
-        if (statusRes.status === "fulfilled" && statusRes.value.ok) {
-          const js = await statusRes.value.json();
-          if (mounted && js.ok && js.status) setWatchInfo(js.status);
-        }
-
-        // recent matches (optional)
-        if (matchesRes.status === "fulfilled" && matchesRes.value.ok) {
-          const jm = await matchesRes.value.json();
-          if (mounted) setRecentMatches(Array.isArray(jm) ? jm.slice(0, 6) : []);
-        }
-      } catch (e) {
-        if (mounted) setError(String(e));
->>>>>>> 9550382a8e59c60e6142fafcd2b946dd2a9b5abb
       } finally {
         if (mounted) setLoading(false);
       }
@@ -126,7 +52,7 @@ export default function Overview() {
     loadAll();
     return () => {
       mounted = false;
-<<<<<<< HEAD
+
       ctrl.abort();
     };
   }, [refreshKey]);
@@ -337,108 +263,20 @@ export default function Overview() {
 
       {error && <div style={{ color: "red", marginTop: 12 }}>{error}</div>}
       <div ref={tooltipRef} style={{ position: "fixed", display: "none", background: "#0f172a", color: "#fff", padding: "6px 8px", borderRadius: 6, fontSize: 12, zIndex: 60 }} />
-=======
-    };
-  }, []);
-
-  return (
-    <div style={wrap}>
-      <h1>Overview</h1>
-
-      <div style={grid}>
-        <Card title="Tag pages" value={loading ? "…" : pagesCount} />
-        <Card title="Tag inputs" value={loading ? "…" : inputsCount} />
-        <Card
-          title="Watching Gmail"
-          value={
-            watchInfo
-              ? watchInfo.watching
-                ? "ON"
-                : "OFF"
-              : loading
-              ? "…"
-              : "unknown"
-          }
-          meta={
-            watchInfo && watchInfo.watch
-              ? `lastSync: ${
-                  watchInfo.lastSyncAt ? new Date(watchInfo.lastSyncAt).toLocaleString() : "—"
-                }`
-              : undefined
-          }
-        />
-        <Card
-          title="Queue / Processing"
-          value={watchInfo?.syncStatus || (loading ? "…" : "idle")}
-          meta={watchInfo?.lastSyncAt ? new Date(watchInfo.lastSyncAt).toLocaleString() : undefined}
-        />
-      </div>
-
-      <section style={{ marginTop: 18, width: "100%" }}>
-        <h3 style={{ margin: 0, marginBottom: 8 }}>Top patterns</h3>
-        {topPatterns.length === 0 ? (
-          <div style={hint}>{loading ? "Loading…" : "No patterns yet"}</div>
-        ) : (
-          <ol>
-            {topPatterns.map((t) => (
-              <li key={t.pattern} style={{ marginBottom: 6 }}>
-                <strong>{t.pattern}</strong> <span style={{ color: "#666" }}>— {t.count}</span>
-              </li>
-            ))}
-          </ol>
-        )}
-      </section>
-
-      <section style={{ marginTop: 18, width: "100%" }}>
-        <h3 style={{ margin: 0, marginBottom: 8 }}>Recent matches</h3>
-        {recentMatches.length === 0 ? (
-          <div style={hint}>{loading ? "Loading…" : "No recent matches"}</div>
-        ) : (
-          <ul>
-            {recentMatches.map((m) => (
-              <li key={m._id || m.gmailMessageId} style={{ marginBottom: 8 }}>
-                <div style={{ fontSize: 13 }}>
-                  <strong>{m.senderEmail || "unknown sender"}</strong>{" "}
-                  <span style={{ color: "#666", fontSize: 12 }}>
-                    • {m.matchedTagInput?.length || m.matchDetails?.length || 0} matches
-                  </span>
-                </div>
-                <div style={{ color: "#666", fontSize: 12 }}>
-                  {m.receivedAt ? new Date(m.receivedAt).toLocaleString() : m.createdAt ? new Date(m.createdAt).toLocaleString() : ""}
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      {error && <div style={{ color: "red", marginTop: 12 }}>Error: {error}</div>}
->>>>>>> 9550382a8e59c60e6142fafcd2b946dd2a9b5abb
     </div>
   );
 }
 
-<<<<<<< HEAD
-/* small presentational helpers */
 function StatCard({ title, value, hint }) {
   return (
     <div style={{ padding: 14, borderRadius: 10, background: "#fff", border: "1px solid #eef2ff" }}>
       <div style={{ fontSize: 12, color: "#6b7280" }}>{title}</div>
       <div style={{ fontSize: 20, fontWeight: 700 }}>{value}</div>
       {hint && <div style={{ fontSize: 12, color: "#9ca3af", marginTop: 6 }}>{hint}</div>}
-=======
-function Card({ title, value, meta }) {
-  return (
-    <div style={card}>
-      <div style={{ fontSize: 12, color: "#666" }}>{title}</div>
-      <div style={{ fontSize: 20, fontWeight: 600 }}>{value}</div>
-      {meta && <div style={{ fontSize: 12, color: "#666", marginTop: 6 }}>{meta}</div>}
->>>>>>> 9550382a8e59c60e6142fafcd2b946dd2a9b5abb
     </div>
   );
 }
 
-<<<<<<< HEAD
 function Panel({ title, children, id, style }) {
   return (
     <div id={id} style={{ padding: 12, borderRadius: 10, background: "#fff", border: "1px solid #e6eefc", ...style }}>
@@ -456,20 +294,4 @@ const header = { display: "flex", justifyContent: "space-between", alignItems: "
 const statsGrid = { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 };
 const select = { padding: "8px 10px", borderRadius: 8, border: "1px solid #e5e7eb" };
 const button = { padding: "8px 10px", background: "#fff", border: "1px solid #e5e7eb", borderRadius: 8, cursor: "pointer" };
-=======
-const wrap = { padding: 28, display: "flex", flexDirection: "column", gap: 16, maxWidth: 980 };
-const grid = { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 };
-const card = {
-  padding: 12,
-  borderRadius: 8,
-  background: "#fff",
-  border: "1px solid #eee",
-  display: "flex",
-  flexDirection: "column",
-  gap: 6,
-  minHeight: 72,
-  justifyContent: "center",
-};
-const hint = { color: "#666", fontSize: 13 };
-// ...existing code...
->>>>>>> 9550382a8e59c60e6142fafcd2b946dd2a9b5abb
+
