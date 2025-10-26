@@ -2,8 +2,12 @@ const fs = require("fs").promises;
 const path = require("path");
 const watchGmail = require("../controllers/watchGmail");
 const oAuth2Client = require("../controllers/oAuthClient");
+<<<<<<< HEAD
 const { maintainWatch, activeWatches } = require("../utils/maintainWatch");
 const { profileIn } = require('../service/profileData')
+=======
+const {maintainWatch,activeWatches} =require("../utils/maintainWatch");
+>>>>>>> 9550382a8e59c60e6142fafcd2b946dd2a9b5abb
 
 const activeWatchers = activeWatches();
 let watchInfo = new Map();

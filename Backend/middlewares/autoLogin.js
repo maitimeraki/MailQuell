@@ -19,7 +19,11 @@ module.exports.autoLogin = async (req, res, next) => {
                 secure: process.env.NODE_ENV === "production",
                 maxAge: 3600000 // 1 hour
             });
+<<<<<<< HEAD
           next();
+=======
+           return res.redirect(`${process.env.FRONTEND_URL}/mail/tag-inputs`);
+>>>>>>> 9550382a8e59c60e6142fafcd2b946dd2a9b5abb
         }
         // 4. Set creds & fetch new access token
         await oAuth2Client.setCredentials({ refresh_token: token.refresh_token });
@@ -40,10 +44,38 @@ module.exports.autoLogin = async (req, res, next) => {
             secure: process.env.NODE_ENV === "production",
             maxAge: 3600000 // 1 hour
         });
+<<<<<<< HEAD
         next();
+=======
+        return res.redirect(`${process.env.FRONTEND_URL}/mail/tag-inputs`);
+>>>>>>> 9550382a8e59c60e6142fafcd2b946dd2a9b5abb
     } catch (e) {
         console.error("Error during auto login:", e);
         res.status(500).json({ message: "Internal Server Error" });
     }
 
+<<<<<<< HEAD
+=======
+
+    // // Perform your autologin logic here
+    // const token = JSON.parse(req.session.token);
+    // if (!token) {
+    //     window.location.href = `${process.env.FRONTEND_URL}`;
+    //     return res.status(401).json({ message: "Unauthorized" });
+    // }
+    // try {
+    //     await oAuth2Client.setCredentials({ refresh_token: token?.refresh_token });
+    //     const { credentials } = await oAuth2Client.getAccessToken();
+    //     res.cookie("auth_token", credentials.access_token, {
+    //         httpOnly: true,
+    //         secure: process.env.NODE_ENV === "production",
+    //         maxAge: 3600000 // 1 hour
+    //     });
+    // } catch (error) {
+    //     console.error("Error during auto login:", error);
+    //     res.status(500).json({ message: "Internal Server Error" });
+    // } finally {
+    //     next();
+    // }
+>>>>>>> 9550382a8e59c60e6142fafcd2b946dd2a9b5abb
 } 

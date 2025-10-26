@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const { profileData: fetchProfileData } = require("../service/profileData");
 const { getdb } = require("../db/db");
+<<<<<<< HEAD
 
 router.get('/details/profile', async (req, res) => {
     try {
@@ -16,10 +17,16 @@ router.get('/details/profile', async (req, res) => {
         }
         console.log("Token exists:", tokens ? "Yes" : "No");
 
+=======
+router.get('/details/profile', async (req, res) => {
+    try {
+        //Not to create naming conflicts with the imported function
+>>>>>>> 9550382a8e59c60e6142fafcd2b946dd2a9b5abb
         const profile = await fetchProfileData(req, res);
         if (!profile) {
             return res.status(404).json({ error: "Profile data not found" });
         }
+<<<<<<< HEAD
 
         const { sub, name, email, picture, timezone } = profile;
         if (!sub || !name || !email) return res.status(400).json({ error: "sub,name,email required" });
@@ -85,6 +92,34 @@ router.get('/details/profile', async (req, res) => {
     } catch (error) {
         console.error("Error fetching to profile data:", error.message || error);
         res.status(500).json({ error: error.message || String(error) });
+=======
+        console.log("Profile data:", profile); // Debug log
+        const { sub, name, email, picture } = profile;
+        if (!sub || !name || !email) return res.status(400).json({ error: "sub,name,email required" });
+
+        const user = {
+            workspaceId: sub,
+            name,
+            email: email.toLowerCase(),
+            avatarUrl: picture || null,
+            roles: "member",
+            disabled: false,
+        };
+        const existingUser = await getdb().collection("users").findOne({ workspaceId: sub });
+        if (existingUser) {
+            // Update existing user details
+            await getdb().collection("users").updateOne(
+                { workspaceId: sub },
+                { $set: {workspaceId: sub, name: name, email: email.toLowerCase(), avatarUrl: picture || null } }
+            );
+            return res.json(profile);
+        }
+        await getdb().collection("users").insertOne(user);
+        res.json(profile);
+    } catch (error) {
+        console.error("Error fetching to profile data:", error.message);
+        res.status(404).json({ error: error.message });
+>>>>>>> 9550382a8e59c60e6142fafcd2b946dd2a9b5abb
     }
 });
 
