@@ -5,28 +5,7 @@ import { Dashboard } from "../pages/Dashboard-Page";
 const Overview = lazy(() => import("@/components/Overview"));
 const ActivityFeed = lazy(() => import("@/components/ActivityFeed"));
 const TagInputs = lazy(() => import("@/components/TagInputs"));
-// const TagPages = lazy(() => import("@/components/TagPages"));
-// const TagExplorer = lazy(() => import("@/components/TagExplorer"));
-// const RulesList = lazy(() => import("@/components/RulesList"));
-// const RuleComposer = lazy(() => import("@/components/RuleComposer"));
-// const RuleRuns = lazy(() => import("@/components/RuleRuns"));
-// const VolumeTrends = lazy(() => import("@/components/analytics/VolumeTrends"));
-// const Performance = lazy(() => import("@/components/analytics/Performance"));
-// const Insights = lazy(() => import("@/components/analytics/Insights"));
-// const Exports = lazy(() => import("@/components/analytics/Exports"));
-// const Usage = lazy(() => import("@/components/Usage"));
-// const Billing = lazy(() => import("@/components/Billing"));
-// const Members = lazy(() => import("@/components/Members"));
-// const Roles = lazy(() => import("@/components/Roles"));
-// const AuditLog = lazy(() => import("@/components/AuditLog"));
-// const Accounts = lazy(() => import("@/components/integrations/Accounts"));
-// const ApiKeys = lazy(() => import("@/components/integrations/ApiKeys"));
-// const Webhooks = lazy(() => import("@/components/integrations/Webhooks"));
-// const Marketplace = lazy(() => import("@/components/integrations/Marketplace"));
 const Profile = lazy(() => import("@/components/settings/Profile"));
-// const Workspace = lazy(() => import("@/components/settings/Workspace"));
-// const Security = lazy(() => import("@/components/settings/Security"));
-// const Notifications = lazy(() => import("@/components/settings/Notifications"));
 export function AppRoutes() {
   return (
     <Routes>
@@ -63,5 +42,3 @@ export function AppRoutes() {
     </Routes>
   );
 }
-
-// export default AppRoutes;

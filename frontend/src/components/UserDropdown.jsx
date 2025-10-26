@@ -4,27 +4,72 @@ export function UserDropdown({ profile, open, onClose, onSignOut }) {
   const ref = useRef(null);
   const [watching, setWatching] = useState(false);
   const [loadingWatch, setLoadingWatch] = useState(false);
-  async function toggleWatch(next) {
-    setWatching(next);
-    if(!next) return ;
-    setLoadingWatch(true);
+  const [watchInfo, setWatchInfo] = useState(null);
+
+  async function fetchStatus() {
     try {
       const res = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/watch-gmail`,          
-        {
-          method: "POST",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ watching: next }),
-        }
+        `${import.meta.env.VITE_BACKEND_URL}/status`,
+        { credentials: "include" }
       );
-      if (!res.ok) throw new Error("failed");                       
+      if (!res.ok) return;
+      const js = await res.json();
+      if (js.ok && js.status) {
+        setWatching(Boolean(js.status.watching));
+        setWatchInfo(js.status);
+      }
+    } catch (e) {
+      console.error("status fetch failed", e);
+    }
+  }
+
+  async function toggleWatch(next) {
+    setLoadingWatch(true);
+
+    try {
+      if (next) { // Turn ON: start watching Gmail
+        const res = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/watch-gmail`,
+          {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              watching: next,
+            }),
+          }
+        );
+
+        const js = await res.json();
+        if (res.ok && js.ok) {
+          setWatching(true); // Update state only on success
+          await fetchStatus();
+        } else {
+          throw new Error(js.error || 'Failed to start watching');
+        }
+      } else { // Turn OFF: stop watching
+        const res = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/stop-watch`,
+          {
+            method: 'POST',
+            credentials: "include"
+          }
+        );
+
+        const js = await res.json();
+        if (res.ok && js.ok) {
+          setWatching(false); // Update state only on success
+          await fetchStatus();
+        } else {
+          throw new Error(js.error || 'Failed to stop watching');
+        }
+      }
     } catch (e) {
       console.error("Failed to toggle watch:", e);
-      setWatching(!next); // revert on failure
-    }finally{
+      // Don't revert - keep current state since the operation failed
+    } finally {
       setLoadingWatch(false);
     }
   }
@@ -120,11 +165,12 @@ export function UserDropdown({ profile, open, onClose, onSignOut }) {
             </span>
           </div>
           <Switch
-            // disabled={loadingWatch}
+            disabled={loadingWatch}
             checked={watching}
-            onCheckedChange={toggleWatch}
+            onCheckedChange={toggleWatch}  // ← This automatically passes the new boolean value
           />
         </div>
+
         <button
           type="button"
           style={itemStyleBtn}

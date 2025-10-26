@@ -6,7 +6,6 @@ import { NavLink, Outlet } from "react-router";
 import { useAutoLogin } from "../hooks/useAutoLogin";
 
 export function Dashboard() {
-  useAutoLogin();
   // const [noTagsPage, setNoTagsPage] = useState(0);
   const groups = navGroups();
   const centerStyle = {

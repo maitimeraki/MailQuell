@@ -9,7 +9,9 @@ import {
   AccordionContent,
 } from "@/components/ui/accordion";
 import { Mail, Zap, Shield, Github, Linkedin } from "lucide-react";
+import { useAutoLogin } from "../hooks/useAutoLogin";
 function HomePage() {
+  useAutoLogin();
   const [isOpen, setIsOpen] = useState(false);
   async function loginbyGoogle() {
     try {
