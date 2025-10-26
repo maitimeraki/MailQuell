@@ -1,0 +1,17 @@
+# build stage
+FROM node:18-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+# Pass REACT_APP_API_URL at build time if needed
+ARG REACT_APP_API_URL
+ENV REACT_APP_API_URL=${REACT_APP_API_URL}
+RUN npm run build
+
+# serve stage
+FROM nginx:stable-alpine
+COPY --from=builder /app/build /usr/share/nginx/html
+# optional: custom nginx.conf to set headers, CORS if required
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
