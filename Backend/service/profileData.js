@@ -1,32 +1,23 @@
 const fs = require("fs").promises;
 
 const path = require("path");
-<<<<<<< HEAD
 let profileInformation = new Map();
-=======
-let profileInformation;
->>>>>>> 9550382a8e59c60e6142fafcd2b946dd2a9b5abb
 async function profileData(req, res) {
     try {
         // ../../ navigates two directories up, which takes you to MailSift.
         // const tokenPath = path.resolve(__dirname, '../../token.json');
         // const tokenData = await fs.readFile(tokenPath, "utf-8");
         let tokenData = req.cookies["auth_token"];
-<<<<<<< HEAD
         console.log("Token data from cookies :", tokenData);
-=======
->>>>>>> 9550382a8e59c60e6142fafcd2b946dd2a9b5abb
         if (!tokenData) {
             console.error("Token not found in cookies");
 
             return res.status(401).send("Unauthorized: No token found");
         }
         console.log(typeof tokenData);
-<<<<<<< HEAD
+
         tokenData = typeof tokenData === "string" ? tokenData : JSON.stringify(tokenData);
-=======
-        tokenData= typeof tokenData === "string" ? tokenData : JSON.stringify(tokenData);
->>>>>>> 9550382a8e59c60e6142fafcd2b946dd2a9b5abb
+
         const access_token = JSON.parse(tokenData);
         // const access_token = token.access_token;
         console.log("Access Token:", access_token);
@@ -46,29 +37,21 @@ async function profileData(req, res) {
             }
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-<<<<<<< HEAD
         const responseData = await response.json();
         profileInformation.set(tokenData, responseData);
 
         console.log("Profile Data:", responseData);
         return responseData;
-=======
-        profileInformation = await response.json();
-        console.log("Profile Data:", profileInformation);
-        return profileInformation;
->>>>>>> 9550382a8e59c60e6142fafcd2b946dd2a9b5abb
+
     } catch (error) {
         console.error("Error fetching profile data:", error.message); // Debug log
         throw error; // Rethrow the error to be handled by the caller
     }
 }
-<<<<<<< HEAD
+
 const profileIn = async (user_token) => {
     console.log(user_token);
     return await profileInformation.get(user_token);
 }
-=======
-const profileIn=async ()=> await profileInformation;
->>>>>>> 9550382a8e59c60e6142fafcd2b946dd2a9b5abb
 
 module.exports = { profileData, profileIn };

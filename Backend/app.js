@@ -67,15 +67,11 @@ app.use(session({
   }
 }));
 
-
-<<<<<<< HEAD
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send('Something broke!');
 });
 
-=======
->>>>>>> 9550382a8e59c60e6142fafcd2b946dd2a9b5abb
 // app.use("/",autoLogin)
 app.use(profileRoute);
 app.use('/users', authenticationRoute);

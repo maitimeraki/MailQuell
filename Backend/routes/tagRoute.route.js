@@ -2,65 +2,9 @@ const express = require('express');
 const router = express.Router();
 const fs = require("fs").promises;
 const path = require("path");
-<<<<<<< HEAD
 const { getdb } = require("../db/db");
 const { ObjectId } = require("mongodb");
 
-=======
-// const { processIncomingEmails} = require('../controllers/tags.controllers');
-// const oAuth2Client = require("../controllers/oAuthClient");
-// const {updateTags}= require('../service/updateTags');
-const { getdb } = require("../db/db");
-const { ObjectId } = require("mongodb");
-// router.post('/processTags', async (req, res) => {
-//     try {
-//         const { tags } = req.body;
-//         console.log(req.sessionID)
-//         console.log("Received tags in route:", tags); // Debug log
-
-//         if (!tags || !Array.isArray(tags)) {
-//             return res.status(400).json({
-//                 success: false,
-//                 message: "Invalid tags format"
-//             });
-//         }
-//         const tokenData=req.session.token;
-//         if (!tokenData) {
-//             return res.status(401).json({
-//                 success: false,
-//                 message: "No valid token found"
-//             });
-//         }
-//         const tokens = JSON.parse(tokenData);
-//         oAuth2Client.setCredentials(tokens);
-//         const updated = updateTags(oAuth2Client, tags);
-//         console.log(updated);
-
-//         if (updated) {
-//             res.json({
-//                 success: true,
-//                 message: 'Tags updated successfully',
-//                 tags: tags
-//             });
-//         } else {
-//             throw new Error('Failed to update tags');
-//         }
-//     } catch (error) {
-//         res.status(500).json({
-//             success: false,
-//             message: error.message
-//         });
-//     }
-// });
-
-
-// function getCreatedBy(req) {
-//   return req.session?.user?.sub || req.session?.profile?.sub || req.user?.sub || null;
-// }
-
-
-
->>>>>>> 9550382a8e59c60e6142fafcd2b946dd2a9b5abb
 router.get("/tag-inputs", async (req, res) => {
     try {
         const { createdBy } = req.query;
@@ -109,10 +53,6 @@ router.post("/create-tag-inputs", async (req, res) => {
     }
 });
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 9550382a8e59c60e6142fafcd2b946dd2a9b5abb
 router.delete("/remove-tag-inputs/:id", async (req, res) => {
     try {
         const { id } = req.params;

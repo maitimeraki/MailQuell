@@ -7,10 +7,6 @@ const fs = require("fs").promises;
 // const { auth } = require("google-auth-library");
 // const { autoLogin } = require("../middlewares/autoLogin");
 // const watchGmailHandler = require("../middlewares/watchGmailHandler");
-<<<<<<< HEAD
-
-=======
->>>>>>> 9550382a8e59c60e6142fafcd2b946dd2a9b5abb
 router.get("/auth", async (req, res) => {
   try {
      

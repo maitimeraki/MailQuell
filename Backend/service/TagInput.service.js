@@ -5,11 +5,8 @@ exports.createTagInput = async (req, res) => {
     const { patternRaw } = req.body;
     if (!workspaceId || !patternRaw) return res.status(400).json({ error: "workspaceId & patternRaw required" });
     const doc = {
-<<<<<<< HEAD
         workspaceId: String(sub),
-=======
-        workspaceId: ObjectId(sub),
->>>>>>> 9550382a8e59c60e6142fafcd2b946dd2a9b5abb
+
         createdBy: email,
         patternRaw,
         patternNorm: norm,
@@ -29,11 +26,9 @@ exports.createTagInput = async (req, res) => {
 exports.listTagInputs = async (req, res) => {
     const { workspaceId, active } = req.query;
     const q = {};
-<<<<<<< HEAD
+
     if (workspaceId) q.workspaceId = workspaceId;
-=======
-    if (workspaceId) q.workspaceId = new ObjectId(workspaceId);
->>>>>>> 9550382a8e59c60e6142fafcd2b946dd2a9b5abb
+
     if (active !== undefined) q.active = active === "true";
     const docs = await getDb().collection("tagInputs").find(q).sort({ createdAt: -1 }).toArray();
     res.json(docs);
