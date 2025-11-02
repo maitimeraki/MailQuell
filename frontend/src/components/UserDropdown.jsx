@@ -35,6 +35,7 @@ export function UserDropdown({ profile, open, onClose, onSignOut }) {
             credentials: "include",
             headers: {
               "Content-Type": "application/json",
+              
             },
             body: JSON.stringify({
               watching: next,
