@@ -6,29 +6,35 @@ const { startWatch, stopWatch, getStatus } = require("../service/watchService");
 const { profileIn } = require("../service/profileData");
 
 
-
 router.post("/watch-gmail", async (req, res) => {
-  const token = req.session.token;
-  console.log(token);
-  let tokens = null;
-  try {
-    tokens = typeof token === "string" ? JSON.parse(token) : token;
-  } catch (e) {
-    console.warn("Could not parse tokens from session in user.route :", e);
-  }
-  const access_token = tokens?.access_token;
 
-  const { watching } = req.body || {};
-  const profileInformation = await profileIn(access_token);
-
-  console.log(profileInformation);
-  const createdBy = profileInformation && profileInformation?.sub;
-  
   try {
+    console.log("🆔 WATCH-GMAIL Session ID:", req.sessionID);
+    console.log(req.session)
+    console.log("Session token:", req.session.token)
+     // Ensure we have a valid session first
+    if (!req.session.token) {
+      return res.status(401).json({ ok: false, error: "Please login first" });
+    }
+    const token = await req.session.token;
+    console.log(token);
+    let tokens = null;
+    try {
+      tokens = typeof token === "string" ? JSON.parse(token) : token;
+    } catch (e) {
+      console.warn("Could not parse tokens from session in user.route :", e);
+    }
+    const access_token = tokens?.access_token;
+    const { watching } = req.body || {};
+    const profileInformation = await profileIn(access_token);
+
+    console.log(profileInformation);
+    const createdBy = profileInformation && profileInformation?.sub;
     if (!createdBy) {
       return res.status(400).json({ ok: false, error: "createdBy is required" });
     }
 
+    
     if (watching) {
       await watchGmailHandler(req, res);
       const watchInfo = await watchInfoFunction();

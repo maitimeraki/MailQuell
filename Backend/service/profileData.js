@@ -3,10 +3,10 @@ const fs = require("fs").promises;
 const path = require("path");
 let profileInformation = new Map();
 async function profileData(req, res) {
+
     try {
-        // ../../ navigates two directories up, which takes you to MailSift.
-        // const tokenPath = path.resolve(__dirname, '../../token.json');
-        // const tokenData = await fs.readFile(tokenPath, "utf-8");
+
+        console.log("🆔 WATCH-GMAIL Session ID:", req.sessionID);
         let tokenData = req.cookies["auth_token"];
         console.log("Token data from cookies :", tokenData);
         if (!tokenData) {
@@ -15,21 +15,20 @@ async function profileData(req, res) {
             return res.status(401).send("Unauthorized: No token found");
         }
         console.log(typeof tokenData);
-
         tokenData = typeof tokenData === "string" ? tokenData : JSON.stringify(tokenData);
-
-        const access_token = JSON.parse(tokenData);
+        // tokenData = JSON.parse(tokenData);
         // const access_token = token.access_token;
-        console.log("Access Token:", access_token);
+        console.log("Access Token:", tokenData);
         const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
             method: 'GET',
             headers: {
-                'Authorization': `Bearer ${access_token}`,
+                'Authorization': `Bearer ${tokenData}`,
                 'Content-Type': 'application/json'
             }
             ,
             scope: ['https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/userinfo.email']
         });
+
 
         if (!response.ok) {
             if (response.status === 401) {

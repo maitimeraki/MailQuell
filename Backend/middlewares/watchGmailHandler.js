@@ -5,7 +5,6 @@ const oAuth2Client = require("../controllers/oAuthClient");
 const { maintainWatch, activeWatches } = require("../utils/maintainWatch");
 const { profileIn } = require('../service/profileData')
 
-const {maintainWatch,activeWatches} =require("../utils/maintainWatch");
 
 
 const activeWatchers = activeWatches();
