@@ -4,13 +4,15 @@ const morgan = require('morgan');
 const helmet = require('helmet');
 const dotenv = require("dotenv");
 const express = require("express");
-const {connectdb} = require("./db/db");
+const { connectdb } = require("./db/db");
 const xssClean = require('xss-clean');
-const { google } = require("googleapis");
+const Redis = require("redis");
+const { RedisStore } = require("connect-redis");
 const session = require("express-session");
+// const { google } = require("googleapis");
 var cookieParser = require('cookie-parser');
-const cookieSession = require("cookie-session");
-const { auth } = require("google-auth-library");
+// const cookieSession = require("cookie-session");
+// const { auth } = require("google-auth-library");
 const mongoSanitize = require('express-mongo-sanitize');
 
 const userRoute = require("./routes/user.route");
@@ -37,7 +39,7 @@ app.set('view engine', 'ejs')
 
 app.use(cors({
   origin: ["http://localhost:3000", "http://localhost:5173"], // Whatever you put frontend url in the .env file that should go here, by chance if put "http://localhost:5173/" instead of "http://localhost:5173"(In the .env file have url "http://localhost:5173")then must have whatever in the .env file.
-  methods: ['GET', 'POST','DELETE','PATCH'],
+  methods: ['GET', 'POST', 'DELETE', 'PATCH'],
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization", "Accept"]
 }));
@@ -54,11 +56,25 @@ app.use(xssClean());                      // Prevent XSS attacks
 app.use(mongoSanitize());                // Prevent NoSQL injection
 app.use(morgan('combined'));
 
+
+
+//Connect to localhost on port 6379.
+const redisClient = Redis.createClient({
+  url: process.env.REDIS_URL || "redis://localhost:6379"
+});
+
+redisClient.on("error", err => console.log("Redis Client error :", err));
+
+redisClient.connect().then(() => console.log("Redis Client connected")).catch(err => console.log("Redis connection error :", err));
+
+// const RedisStore = connectRedis(session);
 // Add session middleware
 app.use(session({
+  store: new RedisStore({ client: redisClient, prefix: "sess:" }),
+  name: "connect.sid",
   secret: process.env.SESSION_SECRET,
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   cookie: {
     httpOnly: true,
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
@@ -67,10 +83,10 @@ app.use(session({
   }
 }));
 
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send('Something broke!');
-});
+// app.use((err, req, res, next) => {
+//   console.error(err.stack);
+//   res.status(500).send('Something broke!');
+// });
 
 // app.use("/",autoLogin)
 app.use(profileRoute);

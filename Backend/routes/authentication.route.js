@@ -9,9 +9,9 @@ const fs = require("fs").promises;
 // const watchGmailHandler = require("../middlewares/watchGmailHandler");
 router.get("/auth", async (req, res) => {
   try {
-     
+
     // Add state parameter to prevent CSRF attacks
-    const state = Math.random().toString(36).substring(7);          
+    const state = Math.random().toString(36).substring(7);
     req.session.oauthState = state;
     const authUrl = oAuth2Client.generateAuthUrl({
       access_type: "offline",
@@ -58,16 +58,22 @@ router.get("/auth/google/callback", async (req, res, next) => {
     console.log("Tokens received:", oAuth2Client?.credentials); // Log the received tokens
     // Save tokens to file
     // await fs.writeFile("../token.json", JSON.stringify(tokens)); 
-    req.session.token = JSON.stringify(tokens);
-    req.session.save();
     res.cookie("auth_token", JSON.stringify(tokens.access_token), {
       httpOnly: true,
       secure: true,
       sameSite: "lax",  // helps prevent CSRF
       maxAge: tokens.expiry_date ? tokens.expiry_date - Date.now() : 3600000 // expiry
     });
+    req.session.token = JSON.stringify(tokens);
+    req.session.save((err) => {
+      if (err) {
+        console.error("Session save error:", err);
+        return res.status(500).json({ error: "Session error" });
+      }
+    console.log("logged in successfully!");
+    });
+    return res.redirect(`${process.env.FRONTEND_URL}/mail`);    //res.location()
     // next();
-    res.redirect(`${process.env.FRONTEND_URL}/mail`);    //res.location()
   } catch (error) {
     console.error("Auth Error:", error.response);
     res.status(400).send(error.message);
