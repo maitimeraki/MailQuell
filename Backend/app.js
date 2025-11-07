@@ -6,18 +6,19 @@ const dotenv = require("dotenv");
 const express = require("express");
 const { connectdb } = require("./db/db");
 const xssClean = require('xss-clean');
-const Redis = require("redis");
 const { RedisStore } = require("connect-redis");
 const session = require("express-session");
-// const { google } = require("googleapis");
 var cookieParser = require('cookie-parser');
+// const { google } = require("googleapis");
 // const cookieSession = require("cookie-session");
 // const { auth } = require("google-auth-library");
 const mongoSanitize = require('express-mongo-sanitize');
 
+
 const userRoute = require("./routes/user.route");
 // const {autoLogin} = require("./middlewares/autoLogin");
 const tagsRoute = require('./routes/tagRoute.route');
+const { redisClient } = require("./config/redis")
 const profileRoute = require("./routes/profile.route");
 const authenticationRoute = require("./routes/authentication.route");
 //Database connection 
@@ -44,6 +45,7 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization", "Accept"]
 }));
 
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('views', path.join(__dirname, 'views'));
 
@@ -59,18 +61,22 @@ app.use(morgan('combined'));
 
 
 //Connect to localhost on port 6379.
-const redisClient = Redis.createClient({
-  url: process.env.REDIS_URL || "redis://localhost:6379"
-});
+// const redisClient = Redis.createClient({
+//   url: process.env.REDIS_URL || "redis://localhost:6379"
+// });
 
-redisClient.on("error", err => console.log("Redis Client error :", err));
 
-redisClient.connect().then(() => console.log("Redis Client connected")).catch(err => console.log("Redis connection error :", err));
+// redisClient.on("error", err => console.log("Redis Client error :", err));
 
-// const RedisStore = connectRedis(session);
+// redisClient.connect().then(() => console.log("Redis Client connected")).catch(err => console.log("Redis connection error :", err));
+
+
 // Add session middleware
+
+
 app.use(session({
-  store: new RedisStore({ client: redisClient, prefix: "sess:" }),
+  //If you have multiple apps using the same Redis instance, prefixes prevent conflicts
+  store: new RedisStore({ client: redisClient, prefix: `sess:${process.env.NODE_ENV || 'dev'}:` }),
   name: "connect.sid",
   secret: process.env.SESSION_SECRET,
   resave: false,
@@ -83,16 +89,12 @@ app.use(session({
   }
 }));
 
-// app.use((err, req, res, next) => {
-//   console.error(err.stack);
-//   res.status(500).send('Something broke!');
-// });
-
 // app.use("/",autoLogin)
 app.use(profileRoute);
 app.use('/users', authenticationRoute);
 app.use('/', userRoute);
 app.use('/api', tagsRoute);
+
 
 
 module.exports = app;
