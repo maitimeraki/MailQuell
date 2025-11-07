@@ -3,7 +3,9 @@ const router = express.Router();
 const oAuth2Client = require('../controllers/oAuthClient');
 // Redirect for authentication     
 const { google } = require("googleapis");
+const { redisClient } = require("../config/redis");
 const fs = require("fs").promises;
+
 // const { auth } = require("google-auth-library");
 // const { autoLogin } = require("../middlewares/autoLogin");
 // const watchGmailHandler = require("../middlewares/watchGmailHandler");
@@ -13,6 +15,11 @@ router.get("/auth", async (req, res) => {
     // Add state parameter to prevent CSRF attacks
     const state = Math.random().toString(36).substring(7);
     req.session.oauthState = state;
+    // delete req.session.string; // Clear any existing tokens
+    // delete req.session.email;
+    // delete req.session.name;
+    // delete req.session.string1;
+    // delete req.session.string2;
     const authUrl = oAuth2Client.generateAuthUrl({
       access_type: "offline",
       scope: [
@@ -53,26 +60,32 @@ router.get("/auth/google/callback", async (req, res, next) => {
     if (tokens.refresh_token) {
       console.log("Save the refresh token:", tokens.refresh_token);
     }
-    // Set tokens to the client    
+    // Set tokens to the client
     oAuth2Client.setCredentials(tokens);
     console.log("Tokens received:", oAuth2Client?.credentials); // Log the received tokens
     // Save tokens to file
-    // await fs.writeFile("../token.json", JSON.stringify(tokens)); 
+    // await fs.writeFile("../token.json", JSON.stringify(tokens));
     res.cookie("auth_token", JSON.stringify(tokens.access_token), {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === 'production', // false for local dev
       sameSite: "lax",  // helps prevent CSRF
       maxAge: tokens.expiry_date ? tokens.expiry_date - Date.now() : 3600000 // expiry
     });
     req.session.token = JSON.stringify(tokens);
+
+    // Optional: also store under token:<sessionID> for quick lookup (same TTL as session)
+    if (redisClient && typeof redisClient.hSet === 'function') {
+      await redisClient.hSet(`token:${req.sessionID}`, {...tokens}, { EX: 24 * 3600 });
+    };
+
     req.session.save((err) => {
       if (err) {
         console.error("Session save error:", err);
         return res.status(500).json({ error: "Session error" });
       }
-    console.log("logged in successfully!");
+      console.log("logged in successfully!");
+      return res.redirect(`${process.env.FRONTEND_URL}/mail`);    //res.location()
     });
-    return res.redirect(`${process.env.FRONTEND_URL}/mail`);    //res.location()
     // next();
   } catch (error) {
     console.error("Auth Error:", error.response);

@@ -1,44 +1,58 @@
-// ...new file...
 
-const { User } = require("../models/UserSchema");
-const { ObjectId } = require("mongodb");
+const { getdb } = require("../db/db");
+// removed dependence on Mongoose model to avoid strict-mode upsert errors
 
-async function startWatch({ createdBy, expiration, historyId }) {
-    // idempotent: upsert User and set watch metadata
-    const update = {
-        $set: {
-            createdBy: String(createdBy),
-            "watch.enabled": true,
-            "watch.expiration": expiration ? new Date(expiration) : null,
-            "watch.historyId": historyId || null,
-            updatedAt: new Date()
-        }
-    };
-    const opts = { upsert: true, new: true }; //"upsert" is a combination of an update and an insert operation
-    await User.findOneAndUpdate({ createdBy: String(createdBy) }, update, opts);
+async function startWatch({ createdBy, channelId, resourceId, expiration, historyId }) {
+  if (!createdBy) throw new Error("createdBy is required");
 
-    return { ok: true };
+  const users = getdb().collection("users"); // native driver
+  const now = new Date();
+
+  // store watch metadata under user's document using workspaceId = createdBy (as used elsewhere)
+  const filter = { workspaceId: String(createdBy) };
+  const update = {
+    $set: {
+      lastWatch: {
+        channelId,
+        resourceId,
+        expiration: expiration ? new Date(Number(expiration)) : null,
+        historyId: historyId || null,
+        updatedAt: now
+      },
+      updatedAt: now
+    },
+    $setOnInsert: {
+      workspaceId: String(createdBy),
+      createdAt: now
+    }
+  };
+
+  await users.updateOne(filter, update, { upsert: true });
+  return true;
 }
 
 async function stopWatch({ createdBy }) {
-    // idempotent: turn off watch fields
-    await User.findOneAndUpdate(
-        { createdBy: String(createdBy) },
-        { $set: { "watch.enabled": false, "watch.expiration": null, updatedAt: new Date() } },
-        { upsert: false }
-    );
-    return { ok: true };
+  if (!createdBy) throw new Error("createdBy is required");
+
+  const users = getdb().collection("users");
+  const now = new Date();
+
+  // clear lastWatch or mark stopped
+  await users.updateOne(
+    { workspaceId: String(createdBy) },
+    {
+      $unset: { lastWatch: "" },
+      $set: { updatedAt: now }
+    }
+  );
+  return true;
 }
 
 async function getStatus({ createdBy }) {
-    const doc = await User.findOne({ createdBy: String(createdBy) }).lean();
-    if (!doc) return { watching: false };
-    return {
-        watching: !!doc.watch?.enabled,
-        watch: doc.watch || null,
-        lastSyncAt: doc.lastSyncAt || null,
-        syncStatus: doc.syncStatus || "idle"
-    };
+  if (!createdBy) throw new Error("createdBy is required");
+  const users = getdb().collection("users");
+  const doc = await users.findOne({ workspaceId: String(createdBy) }, { projection: { lastWatch: 1 } });
+  return doc?.lastWatch ?? null;
 }
 
 module.exports = { startWatch, stopWatch, getStatus };

@@ -3,7 +3,7 @@ const path = require("path");
 const watchGmail = require("../controllers/watchGmail");
 const oAuth2Client = require("../controllers/oAuthClient");
 const { maintainWatch, activeWatches } = require("../utils/maintainWatch");
-const { profileIn } = require('../service/profileData')
+const { profileData } = require('../service/profileData')
 
 
 
@@ -12,19 +12,21 @@ let watchInfo = new Map();
 // Endpoint to initiate watching Gmail
 module.exports.watchGmailHandler = async (req, res) => {
     try {
-        // const tokenData = req.session.token;
-        // console.log('Token data:', tokenData);
-        // const tokens = JSON.parse(tokenData);
-        const profileInformation = await profileIn();
-        const credentials = profileInformation.sub;
-        oAuth2Client.setCredentials(credentials);
+        const tokenData = req.session?.token;
+        console.log('Token data:', tokenData);
+        const tokens = JSON.parse(tokenData);
+        // Fetch the profile data to stored in the form of map(key,value)
+        const profile = await profileData(req, res);
+        const profileInformation = { ...profile };
+        console.log("Profile Information in watchGmailHandler:", profileInformation?.sub);
+        const credentials = profileInformation?.sub;
+        oAuth2Client.setCredentials(tokens);
         // Validate tags from request body
         const tags = req.body.tags || [];
         // Set up initial watch
         const response = await watchGmail.watchGmail(oAuth2Client);
         console.log('Watch initiated with historyId:', response);
         watchInfo.set(credentials, response);
-        console.log(req.session.token);
         // Start continuous watching
         const userId = req.session.oauthState || 'default';
         console.log('Setting up watch for user:', userId);

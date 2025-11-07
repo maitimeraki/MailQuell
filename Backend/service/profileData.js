@@ -1,7 +1,6 @@
-const fs = require("fs").promises;
-
-const path = require("path");
 let profileInformation = new Map();
+const CACHE_TTL = 15 * 60 * 1000; // 15 minutes
+
 async function profileData(req, res) {
 
     try {
@@ -11,13 +10,18 @@ async function profileData(req, res) {
         console.log("Token data from cookies :", tokenData);
         if (!tokenData) {
             console.error("Token not found in cookies");
-
             return res.status(401).send("Unauthorized: No token found");
+        };
+
+        if (profileInformation.has(tokenData)) {
+            console.log("✅ Returning cached profile data");
+            const cachedData = profileInformation.get(tokenData);
+            return res.json(cachedData); // Or return cachedData if not using express res
         }
         console.log(typeof tokenData);
         tokenData = typeof tokenData === "string" ? tokenData : JSON.stringify(tokenData);
         // tokenData = JSON.parse(tokenData);
-        // const access_token = token.access_token;
+        // const access_token = token.access_token;   
         console.log("Access Token:", tokenData);
         const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
             method: 'GET',
@@ -36,10 +40,20 @@ async function profileData(req, res) {
             }
             throw new Error(`HTTP error! status: ${response.status}`);
         }
+
         const responseData = await response.json();
-        profileInformation.set(tokenData, responseData);
+        // Store in cache with timestamp
+        profileInformation.set(req.sessionID, {
+            data: responseData,
+            timestamp: Date.now()
+        });
+        setTimeout(() => {
+            profileInformation.delete(req.sessionID);
+            console.log('Removed cashed profile data for token!!')
+        }, CACHE_TTL);
 
         console.log("Profile Data:", responseData);
+
         return responseData;
 
     } catch (error) {
@@ -48,9 +62,18 @@ async function profileData(req, res) {
     }
 }
 
-const profileIn = async (user_token) => {
-    console.log(user_token);
-    return await profileInformation.get(user_token);
-}
+const profileIn = (user_sessionID) => {
+    console.log(typeof user_sessionID);
+    console.log("Looking up profile for token:", user_sessionID);
 
+    const cached = profileInformation.get(user_sessionID);
+    if (cached) {
+        console.log("✅ Found cached profile data");
+        console.log('Cached profile data:', cached.data);
+        return cached.data;
+    }
+
+    console.log("❌ No cached profile data found");
+    return null;
+}
 module.exports = { profileData, profileIn };

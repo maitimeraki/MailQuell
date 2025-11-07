@@ -5,9 +5,11 @@ const { getdb } = require("../db/db");
 
 
 router.get('/details/profile', async (req, res) => {
-     console.log(req.session)
+
+     console.log(req.session);
     const profile = await fetchProfileData(req, res);
     try {
+
         const tokens = req.session.token;
          console.log(req.session.token);
         //Not to create naming conflicts with the imported function
@@ -75,7 +77,6 @@ router.get('/details/profile', async (req, res) => {
             await users.insertOne(newUser);
             return res.json(profile);
         }
-
     } catch (error) {
         console.error("Error fetching to profile data:", error.message || error);
         res.status(500).json({ error: error.message || String(error) });
