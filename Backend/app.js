@@ -8,6 +8,7 @@ const { connectdb } = require("./db/db");
 const xssClean = require('xss-clean');
 const { RedisStore } = require("connect-redis");
 const session = require("express-session");
+// const promClient = require("prom-client");
 var cookieParser = require('cookie-parser');
 // const { google } = require("googleapis");
 // const cookieSession = require("cookie-session");
@@ -21,12 +22,14 @@ const tagsRoute = require('./routes/tagRoute.route');
 const { redisClient } = require("./config/redis")
 const profileRoute = require("./routes/profile.route");
 const authenticationRoute = require("./routes/authentication.route");
+const metricsRoute = require("./metrics/metrics.route/metrics.route");
 //Database connection 
 connectdb();
 
 const app = express();
 dotenv.config();
 
+// Middleware setup
 app.use(cookieParser());
 app.set('view engine', 'ejs')
 
@@ -89,12 +92,11 @@ app.use(session({
   }
 }));
 
-// app.use("/",autoLogin)
+app.use("/log", metricsRoute);
 app.use(profileRoute);
 app.use('/users', authenticationRoute);
 app.use('/', userRoute);
 app.use('/api', tagsRoute);
-
 
 
 module.exports = app;

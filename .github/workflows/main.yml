@@ -1,0 +1,67 @@
+name: MailQuell CI/CD Pipeline
+
+on: 
+    push: 
+        branches:
+            - main
+    pull_request:
+        branches:
+            - main
+
+
+jobs: 
+    build-and-test:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v2
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v2
+              with:
+                  node-version: '22'
+
+            - name: Install dependencies
+              run: npm install
+              working-directory: ./Backend
+
+            - name: Run tests
+              run: npm test
+              working-directory: ./Backend
+
+    deploy:
+        needs: build-and-test
+        runs-on: ubuntu-latest
+        if: github.ref == 'refs/heads/main'
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v3
+
+            # Add your deployment steps here.
+            # Example: Deploy to server via SSH (replace with your own logic)
+            # - name: Deploy to Server
+            #   uses: appleboy/ssh-action@v0.1.10
+            #   with:
+            #     host: ${{ secrets.SERVER_HOST }}
+            #     username: ${{ secrets.SERVER_USER }}
+            #     key: ${{ secrets.SERVER_SSH_KEY }}
+            #     script: |
+            #       cd /path/to/app
+            #       git pull
+            #       npm install
+            #       pm2 restart all
+
+            # # Or deploy to a cloud provider, Docker, etc.
+            # - name: Deploy to Server
+            # uses: appleboy/ssh-action@v0.1.10
+            # with:
+            #     host: ${{ secrets.SERVER_HOST }}
+            #     username: ${{ secrets.SERVER_USER }}
+            #     key: ${{ secrets.SERVER_SSH_KEY }}
+            #     script: |
+            #     cd /path/to/MailSift
+            #     git pull
+            #     cd Backend
+            #     npm install
+            #     pm2 restart all
