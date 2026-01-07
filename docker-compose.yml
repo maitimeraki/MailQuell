@@ -1,3 +1,10 @@
-version: "3.8"
+version: "3"
+
 services:
-  backend:
+    prom-server:
+        image: prom/prometheus
+        container_name: prom-server
+        ports:
+          - "9090:9090"
+        volumes:
+          - ./Backend/prometheus-config.yml:/etc/prometheus/prometheus.yml
