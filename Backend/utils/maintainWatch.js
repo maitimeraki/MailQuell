@@ -3,14 +3,14 @@ const { updateTags, activeTags } = require("../service/updateTags");
 // Store active watches and their associated tags
 let activeWatches = new Map();
 
-module.exports.maintainWatch = async (auth, initialTags) => {
+module.exports.maintainWatch = async (auth) => {
     try {
         if (activeWatches.has(auth)) {
             clearInterval(activeWatches.get(auth).interval);
             activeWatches.delete(auth);
         }
 
-        updateTags(auth, initialTags);
+        const processTags = await updateTags(auth);
 
         let isProcessing = false;
         let consecutiveErrors = 0;
@@ -23,7 +23,7 @@ module.exports.maintainWatch = async (auth, initialTags) => {
             lastHistoryId = profile.data.historyId;
             console.log(`Initial history ID: ${lastHistoryId}`);
         } catch (error) {
-            console.log('Could not get initial history ID, will use fallback method');
+            console.log('Could not get initial history ID, will use   fallback method');
         }
 
         const watchInterval = setInterval(async () => {
@@ -47,7 +47,7 @@ module.exports.maintainWatch = async (auth, initialTags) => {
                     console.log(`✅ Check completed: ${result.processed} processed, ${result.moved} moved`);
                     consecutiveErrors = 0;
                 } else {
-                    console.log('No tags to process');
+                    console.log('No tags to process in maintainwatch');
                 }
             } catch (error) {
                 consecutiveErrors++;
@@ -73,14 +73,14 @@ module.exports.maintainWatch = async (auth, initialTags) => {
         // Store watch state
         activeWatches.set(auth, {
             interval: watchInterval,
-            tags: initialTags,
+            tags: processTags,
             lastHistoryId: lastHistoryId,
             lastRun: new Date()
         });
 
         // Initial processing
-        if (initialTags && initialTags.length > 0) {
-             await tagsControllers.processIncomingEmails(auth, initialTags);
+        if (processTags && processTags.length > 0) {
+             await tagsControllers.processIncomingEmails(auth, processTags);
         }
 
         console.log('✅ Efficient watch interval set up successfully');
