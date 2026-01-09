@@ -15,7 +15,7 @@ var cookieParser = require('cookie-parser');
 // const { auth } = require("google-auth-library");
 const mongoSanitize = require('express-mongo-sanitize');
 
-
+const webHookRoute = require('./routes/webHook.route');
 const userRoute = require("./routes/user.route");
 // const {autoLogin} = require("./middlewares/autoLogin");
 const tagsRoute = require('./routes/tagRoute.route');
@@ -51,7 +51,6 @@ app.use(cors({
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('views', path.join(__dirname, 'views'));
-
 
 // Add body parser middleware
 app.use(express.json());
@@ -92,7 +91,8 @@ app.use(session({
   }
 }));
 
-app.use("/log", metricsRoute);
+app.use("/monitor", metricsRoute);
+app.use('/webhook', webHookRoute);
 app.use(profileRoute);
 app.use('/users', authenticationRoute);
 app.use('/', userRoute);
