@@ -42,10 +42,10 @@ app.set('view engine', 'ejs')
 // }));
 
 app.use(cors({
-  origin: ["http://localhost:3000", "http://localhost:5173"], // Whatever you put frontend url in the .env file that should go here, by chance if put "http://localhost:5173/" instead of "http://localhost:5173"(In the .env file have url "http://localhost:5173")then must have whatever in the .env file.
-  methods: ['GET', 'POST', 'DELETE', 'PATCH'],
+  origin: ["http://localhost:3000", "http://localhost:5173","https://detractingly-osseous-margarete.ngrok-free.dev"], // Whatever you put frontend url in the .env file that should go here, by chance if put "http://localhost:5173/" instead of "http://localhost:5173"(In the .env file have url "http://localhost:5173")then must have whatever in the .env file.
+  methods: ['GET', 'POST', 'DELETE', 'PATCH','PUT'],
   credentials: true,
-  allowedHeaders: ["Content-Type", "Authorization", "Accept"]
+  allowedHeaders: ["Content-Type", "Authorization", "Accept","Origin","Access-Control-Allow-Origin","Cookie"],
 }));
 
 
