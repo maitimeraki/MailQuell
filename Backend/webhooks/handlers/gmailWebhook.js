@@ -18,7 +18,6 @@ module.exports.gmailWebHooksHandler = async (req,res)=>{
             console.error('Missing emailAddress or historyId in payload');
             return res.status(400).send('Missing Data');
         }
-
         // Add a job to the Gmail queue for processing
         await gmailQueue.add("process-gmail-notification", {
             emailAddress,
