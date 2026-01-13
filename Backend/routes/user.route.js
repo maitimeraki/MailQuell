@@ -18,7 +18,7 @@ router.post("/watch-gmail", async (req, res) => {
     let access_token = null;
     let tokens = null;
     // Read token from session (no await)
-    if (req.session && req.session.token) {
+    if (req.session && req.session. token) {
       try {
         console.log("Parsing tokens from session using req.session!");
         tokens = typeof req.session.token === "string" ? JSON.parse(req.session.token) : req.session.token;
@@ -58,7 +58,13 @@ router.post("/watch-gmail", async (req, res) => {
     if (watching) {
       await watchGmailHandler(req, res);
       const watchInfo = await watchInfoFunction();
-      const { expiration, historyId } = watchInfo;
+      console.log("Watch Info:", watchInfo);
+      if (!watchInfo) {
+        if (!res.headersSent)
+          return res.status(500).json({ ok: false, error: "Failed to retrieve watchinfo" });
+        return;
+      }
+      const { historyId, expiration } = watchInfo.get(createdBy);
       // persist watch metadata idempotently
       await startWatch({ createdBy, expiration, historyId });
       if (!res.headersSent) return res.json({ ok: true, watching: true });
@@ -88,7 +94,7 @@ router.get("/status", async (req, res) => {
   const createdBy = profileInformation?.sub;
   if (!createdBy) return res.status(400).json({ ok: false, error: "createdBy required" });
   try {
-    const status = await getStatus({ createdBy });
+    const status = await getStatus ({ createdBy });
     res.json({ ok: true, status });
   } catch (e) {
     console.error("/status error", e);

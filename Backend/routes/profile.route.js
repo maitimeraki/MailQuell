@@ -6,15 +6,22 @@ const { getdb } = require("../db/db");
 
 router.get('/details/profile', async (req, res) => {
 
-     console.log(req.session);
+    console.log(req.session);
     const profile = await fetchProfileData(req, res);
     try {
-
-        const tokens = req.session.token;
-         console.log(req.session.token);
+        let tokens = null;
+        
+        if (req.session.token) {
+            try {
+                tokens = typeof req.session.token === "string" ? JSON.parse(req.session.token) : req.session.token;
+            } catch (e) {
+                tokens = null;
+            }
+        }
+        console.log(tokens);
         //Not to create naming conflicts with the imported function
         if (!profile) {
-            return res.status(404).json({ error: "Profile data not found" });
+            return res.status(404).json({ error: "Profile data not found!" });
         }
 
         const { sub, name, email, picture, timezone } = profile;
@@ -31,28 +38,39 @@ router.get('/details/profile', async (req, res) => {
         // Build common fields to set/update
         const now = new Date();
         const accessToken = tokens?.access_token || null;
-        const refreshToken = tokens?.refresh_token || existingUser?.refreshToken || null;
-        const accessTokenExpiresAt = tokens?.expiry_date ? new Date(tokens.expiry_date) : existingUser?.accessTokenExpiresAt || null;
+        const refreshToken = tokens?.refresh_token || existingUser?.tokens?.refreshToken || null;
+        const accessTokenExpiresAt = tokens?.expiry_date ? new Date(tokens.expiry_date) : existingUser?.tokens?.accessTokenExpiresAt || null;
+
 
         const userDoc = {
             name,
             email: email.toLowerCase(),
             avatarUrl: picture || null,
             timezone: timezone || existingUser?.timezone || null,
-            refreshToken,
-            accessToken,
-            accessTokenExpiresAt,
-            // ensure watch object exists; preserve existing watch info if present
+            tokens: {
+                refreshToken,
+                accessToken,
+                accessTokenExpiresAt,
+                lastRefreshAt: now
+            },
             watch: existingUser?.watch || {
                 enabled: false,
                 historyId: null,
-                expiration: null
+                expiration: null,
+                lastSetupAt: null,
+                lastError: null,
+                webhookStatus: "pending"
             },
             lastSyncAt: existingUser?.lastSyncAt || null,
             syncStatus: existingUser?.syncStatus || "idle",
             roles: existingUser?.roles || "owner",
             disabled: existingUser?.disabled || false,
-            updatedAt: now
+            lastLoginAt: now,
+            lastWebhookAt: existingUser?.lastWebhookAt || null,
+            audit: {
+                createdAt: existingUser?.audit?.createdAt || now,
+                updatedAt: now
+            }
         };
 
         if (existingUser) {
@@ -103,7 +121,8 @@ router.get('/details/profile', async (req, res) => {
         // }
         // await getdb().collection("users").insertOne(user);
         // res.json(profile);
-    }}
+    }
+}
 );
 
 router.get("/terms.html", async (req, res) => {
