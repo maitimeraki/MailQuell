@@ -15,7 +15,7 @@ export function UserDropdown({ profile, open, onClose, onSignOut }) {
       if (!res.ok) return;
       const js = await res.json();
       if (js.ok && js.status) {
-        setWatching(Boolean(js.status.watching));
+        setWatching(Boolean(js.status?.enabled));
         setWatchInfo(js.status);
       }
     } catch (e) {
@@ -35,7 +35,7 @@ export function UserDropdown({ profile, open, onClose, onSignOut }) {
             credentials: "include",
             headers: {
               "Content-Type": "application/json",
-              
+
             },
             body: JSON.stringify({
               watching: next,
