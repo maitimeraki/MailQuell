@@ -2,7 +2,7 @@
 const { getdb } = require("../db/db");
 // removed dependence on Mongoose model to avoid strict-mode upsert errors
 
-async function startWatch({ createdBy, channelId, resourceId, expiration, historyId }) {
+async function startWatch({ createdBy, expiration, historyId }) {
   if (!createdBy) throw new Error("createdBy is required");
 
   const users = getdb().collection("users"); // native driver
@@ -12,13 +12,11 @@ async function startWatch({ createdBy, channelId, resourceId, expiration, histor
   const filter = { workspaceId: String(createdBy) };
   const update = {
     $set: {
-      lastWatch: {
-        channelId,
-        resourceId,
-        expiration: expiration ? new Date(Number(expiration)) : null,
-        historyId: historyId || null,
-        updatedAt: now
-      },
+      "watch.enabled": true,
+      "watch.historyId": historyId || null,
+      "watch.expiration": expiration ? new Date(Number(expiration)) : null,
+      "watch.lastSetupAt": now,
+      "watch.webhookStatus": "pending",
       updatedAt: now
     },
     $setOnInsert: {
@@ -41,8 +39,14 @@ async function stopWatch({ createdBy }) {
   await users.updateOne(
     { workspaceId: String(createdBy) },
     {
-      $unset: { lastWatch: "" },
-      $set: { updatedAt: now }
+      $set: {
+        "watch.enabled": false,
+        "watch.historyId": null,
+        "watch.expiration": null,
+        "watch.lastError": null,
+        "watch.webhookStatus": "pending",
+        updatedAt: now
+      }
     }
   );
   return true;
@@ -51,8 +55,9 @@ async function stopWatch({ createdBy }) {
 async function getStatus({ createdBy }) {
   if (!createdBy) throw new Error("createdBy is required");
   const users = getdb().collection("users");
-  const doc = await users.findOne({ workspaceId: String(createdBy) }, { projection: { lastWatch: 1 } });
-  return doc?.lastWatch ?? null;
+  //Limits the data returned to save memory and speed up the app -> projection.
+  const doc = await users.findOne({ workspaceId: String(createdBy) }, { projection: { watch: 1 } });
+  return doc?.watch ?? null;
 }
 
 module.exports = { startWatch, stopWatch, getStatus };
