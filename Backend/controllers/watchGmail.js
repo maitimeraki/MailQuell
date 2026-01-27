@@ -24,6 +24,7 @@ module.exports.watchGmail = async (auth) => {
                 topicName: topicName,
             },
         });
+        console.log("Gmail watch set up successfully:", response.data);
         return response.data;
     } catch (error) {
         console.error("Error setting up Gmail watch:", error.response);

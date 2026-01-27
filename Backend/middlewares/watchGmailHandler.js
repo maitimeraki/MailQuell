@@ -7,7 +7,7 @@ const { profileData } = require('../service/profileData')
 
 
 
-const activeWatchers = activeWatches();
+// const activeWatchers = activeWatches();
 let watchInfo = new Map();
 // Endpoint to initiate watching Gmail
 module.exports.watchGmailHandler = async (req, res) => {
@@ -22,7 +22,7 @@ module.exports.watchGmailHandler = async (req, res) => {
         const credentials = profileInformation?.sub;
         oAuth2Client.setCredentials(tokens);
         // Validate tags from request body
-        const tags = req.body.tags || [];
+        // const tags = req.body.tags || [];
         // Set up initial watch
         const response = await watchGmail.watchGmail(oAuth2Client);
         console.log('Watch initiated with historyId:', response);
@@ -35,7 +35,7 @@ module.exports.watchGmailHandler = async (req, res) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
         });
-        await maintainWatch(oAuth2Client, tags);
+        // await maintainWatch(oAuth2Client);
 
     } catch (error) {
         console.error("Error watching Gmail:", error.message);
