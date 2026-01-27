@@ -1,6 +1,6 @@
 // Aggregate functions for fetch taginputs and user details
 
-module.exports.UserAndTaginputsAggregation = (emailAddress) => {
+module.exports.UserAndTaginputsAggregation = async (emailAddress) => {
     return [
         {
             $match: { email: emailAddress.toLowerCase() }
