@@ -29,7 +29,7 @@ router.get('/details/profile', async (req, res) => {
         // Implement workspaceId creation logic
         // Use externalId to reliably map Google sub -> user doc.
         // workspaceId will be an ObjectId; if a user exists keep their workspaceId, else create one.
-        const users = getdb().collection("users");
+        const users = await getdb().collection("users");
         const externalId = String(sub);
 
         // Try find existing user by workspaceId
@@ -137,4 +137,7 @@ router.get("/privacy.html", async (req, res) => {
         message: "Terms and conditions accepted"
     })
 })
+
+
+
 module.exports = router;
