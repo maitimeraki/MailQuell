@@ -6,8 +6,8 @@ const dotenv = require("dotenv");
 const express = require("express");
 const { connectdb } = require("./db/db");
 const xssClean = require('xss-clean');
-const { RedisStore } = require("connect-redis");
 const session = require("express-session");
+const RedisStore = require("connect-redis")(session);
 // const promClient = require("prom-client");
 var cookieParser = require('cookie-parser');
 // const { google } = require("googleapis");
@@ -21,10 +21,26 @@ const userRoute = require("./routes/user.route");
 const tagsRoute = require('./routes/tagRoute.route');
 const { redisClient } = require("./config/redis")
 const profileRoute = require("./routes/profile.route");
+const { gmailWorkerHandler } = require("./workers/gmailWorker");
 const authenticationRoute = require("./routes/authentication.route");
 const metricsRoute = require("./metrics/metrics.route/metrics.route");
 //Database connection 
-connectdb();
+async function initApp() {
+    try {
+        // 1. Connect to Database FIRST
+        await connectdb(); 
+        console.log("✅ Database connected successfully");
+
+        // 2. Start Worker ONLY after DB is ready
+        gmailWorkerHandler(redisClient);
+
+    } catch (err) {
+        console.error("❌ Failed to start app:", err);
+        process.exit(1);
+    }
+}
+
+initApp();
 
 const app = express();
 dotenv.config();
@@ -42,10 +58,10 @@ app.set('view engine', 'ejs')
 // }));
 
 app.use(cors({
-  origin: ["http://localhost:3000", "http://localhost:5173","https://detractingly-osseous-margarete.ngrok-free.dev"], // Whatever you put frontend url in the .env file that should go here, by chance if put "http://localhost:5173/" instead of "http://localhost:5173"(In the .env file have url "http://localhost:5173")then must have whatever in the .env file.
-  methods: ['GET', 'POST', 'DELETE', 'PATCH','PUT'],
+  origin: ["http://localhost:3000", "http://localhost:5173", "https://detractingly-osseous-margarete.ngrok-free.dev"], // Whatever you put frontend url in the .env file that should go here, by chance if put "http://localhost:5173/" instead of "http://localhost:5173"(In the .env file have url "http://localhost:5173")then must have whatever in the .env file.
+  methods: ['GET', 'POST', 'DELETE', 'PATCH', 'PUT'],
   credentials: true,
-  allowedHeaders: ["Content-Type", "Authorization", "Accept","Origin","Access-Control-Allow-Origin","Cookie"],
+  allowedHeaders: ["Content-Type", "Authorization", "Accept", "Origin", "Access-Control-Allow-Origin", "Cookie"],
 }));
 
 
