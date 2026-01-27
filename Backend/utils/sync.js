@@ -1,11 +1,10 @@
 //This worker scans Redis keys prefixed with sess: and extracts session JSON, then upserts into users collection. Run as a separate process or cron.
 
-const Redis = require("redis");
+const Redis = require("ioredis");
 const { getdb } = require("../db/db");
 
 async function sync() {
-  const client = Redis.createClient({ url: process.env.REDIS_URL || "redis://localhost:6379" });
-  await client.connect();
+  const client = new Redis(process.env.REDIS_URL || "redis://localhost:6379");
   const db = getdb();
   const users = db.collection("users");
 
