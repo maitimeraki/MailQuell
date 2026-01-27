@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const oAuth2Client = require('../controllers/oAuthClient');
 // Redirect for authentication     
-const { google } = require("googleapis");
+const crypto = require('crypto');
 const { redisClient } = require("../config/redis");
 const fs = require("fs").promises;
 
@@ -13,13 +13,16 @@ router.get("/auth", async (req, res) => {
   try {
 
     // Add state parameter to prevent CSRF attacks
-    const state = Math.random().toString(36).substring(7);
+    // const state = Math.random().toString(36).substring(7);
+    const state = crypto.randomBytes(16).toString("hex");
     req.session.oauthState = state;
+    req.session.save((err)=>{
+      if(err){
+        console.error("Session save error:", err);
+        return res.status(500).json({ error: "Session error" });
+      }
+    })
     // delete req.session.string; // Clear any existing tokens
-    // delete req.session.email;
-    // delete req.session.name;
-    // delete req.session.string1;
-    // delete req.session.string2;
     const authUrl = oAuth2Client.generateAuthUrl({
       access_type: "offline",
       scope: [
