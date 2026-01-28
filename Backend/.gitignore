@@ -1,4 +1,7 @@
 .env
 credentials.json
 node_modules
-*.yml
+# *.yml
+.DS_Store
+.env.local
+

@@ -1,5 +1,5 @@
 const { google } = require('googleapis');
-const addressSplit = require('../service/addressSplit.service');
+const {addressSplit} = require('../service/addressSplit.service');
 
 // Utility to split email addresses from "From" header strings and process Gmail messages based on tags
 module.exports.processIncomingEmailsWithHistory = async (auth, tags, lastHistoryId = null) => {
@@ -27,7 +27,7 @@ module.exports.processIncomingEmailsWithHistory = async (auth, tags, lastHistory
                 history.data.history.forEach(historyItem => {
                     if (historyItem.messagesAdded) {
                         historyItem.messagesAdded.forEach(added => {
-                            if (added.message && added.message.labelIds?.includes('INBOX')) {
+                            if (added.message && added.message.id) {
                                 messagesToProcess.push(added.message);
                             }
                         });
@@ -101,11 +101,11 @@ module.exports.processIncomingEmailsWithHistory = async (auth, tags, lastHistory
         // // Get new history ID for next run
         // const profile = await gmail.users.getProfile({ userId: 'me' });
         // const newHistoryId = profile.data.historyId;
-        // return {
-        //     processed: messagesToProcess.length,
-        //     moved: messagesToMove.length,
-        //     historyId: newHistoryId
-        // };
+        return {
+            processed: messagesToProcess.length,
+            moved: messagesToMove.length,
+            historyId: newHistoryId
+        };
     } catch (error) {
         console.error('Error processing emails with history:', error);
         throw error;
