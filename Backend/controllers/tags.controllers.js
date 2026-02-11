@@ -73,7 +73,7 @@ module.exports.processIncomingEmailsWithHistory = async (auth, tags, lastHistory
                 const headers = messageDetails.data.payload.headers;
                 const fromHeader = headers.find(h => h.name === 'From')?.value || '';
                 
-                const target = addressSplit.addressSplit(fromHeader);
+                const target = addressSplit(fromHeader);
                 
                 if (target && Array.isArray(target)) {
                     const emailSet = new Set(target.map(email => email.toLowerCase()));
@@ -104,7 +104,7 @@ module.exports.processIncomingEmailsWithHistory = async (auth, tags, lastHistory
         return {
             processed: messagesToProcess.length,
             moved: messagesToMove.length,
-            historyId: newHistoryId
+            historyId: lastHistoryId
         };
     } catch (error) {
         console.error('Error processing emails with history:', error);
