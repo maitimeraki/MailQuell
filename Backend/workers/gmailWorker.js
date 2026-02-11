@@ -51,7 +51,6 @@ const gmailWorkerHandler = async (redisConnection)=>{
         const result = await processIncomingEmailsWithHistory(oAuth2Client, tags, historyId);
         console.log(`Job ${job.id} completed. Processed: ${result.processed}, Moved: ${result.moved}, New HistoryId: ${result.historyId}`);
         return result;
-    
     },{
         connection:redisConnection,
         concurrency: 5,  //Process 50 users at once (Parallel processing)
@@ -73,7 +72,7 @@ const gmailWorkerHandler = async (redisConnection)=>{
     gmailWorker.on('failed',(job,err)=>{
         console.log(`Job ${job.id} has failed with error: ${err.message}`);
     })
-
 }
+
 
 module.exports = { gmailWorkerHandler };
