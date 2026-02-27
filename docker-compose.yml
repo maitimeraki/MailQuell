@@ -1,11 +1,94 @@
 version: "3"
-
 services:
     prom-server:
         image: prom/prometheus
         container_name: prom-server
         ports:
           - "9090:9090"
+        networks:
+        - mailquell-network
         volumes:
           - ./Backend/prometheus-config.yml:/etc/prometheus/prometheus.yml
-          
+
+    mailquell-backend:
+     # Use the 'build' key to specify the context (e.g., current directory)
+        build:
+          context: ./Backend
+          dockerfile: Dockerfile.Backend
+        # Optionally tag the image for easier reference
+        image: mailquell-backend:1.0
+        container_name: mailquell-backend
+        ports:
+          - "3000:3000" # Map container's 3000 to host's 3000
+        networks:
+          - mailquell-network
+        # Use env_file to load environment variables from a .env file
+        env_file:
+          - ./Backend/.env
+        # Alternatively, you can directly set environment variables here
+        environment:
+          - REDIS_URL=redis://redis:6379  # Use service name, not localhost for inter-container communication
+          - NODE_ENV=production  # Direct overrid
+        depends_on:
+          - redis  # Ensure Redis starts before backend
+          # - ngrok  # Ensure ngrok starts before backend (if needed for backend exposure)
+
+    mailquell-frontend:
+     # Use the 'build' key to specify the context (e.g., current directory)
+        build:
+          context: ./frontend
+          dockerfile: Dockerfile.Frontend
+          args:
+            - VITE_BACKEND_URL=http://localhost:3000  # Pass backend URL as build argument to frontend Dockerfile
+        image: mailquell-frontend:1.0
+        container_name: mailquell-frontend
+        ports:
+          - "5173:5173" # Map container's 5173 to host's 5173
+        networks:
+          - mailquell-network
+        # Use following when .env not in .dockerignore and you want to load env vars from file
+        # env_file:
+        #   - ./frontend/.env
+        environment:
+          - CHOKIDAR_USEPOLLING=true # Environment variable for file watching
+        depends_on:
+          - mailquell-backend
+        restart: unless-stopped
+    redis:
+        image: redis:8.4.1-alpine
+        container_name: mailquell-redis
+        ports:
+          - "6379:6379" # Map container's 6379 to host's 6379
+        volumes:
+          - redis-data:/data
+        networks:
+          - mailquell-network
+        restart: unless-stopped
+
+    # Ngrok service to expose your backend
+    ngrok:
+      image: ngrok/ngrok:3-alpine
+      container_name: mailquell-ngrok
+      command: http mailquell-backend:3000 --domain=${NGROK_DOMAIN} --authtoken=${NGROK_AUTH_TOKEN} # Expose backend port with ngrok and 3000 : Port where your backend app is listening inside the container
+      ports:
+        - "4040:4040"  # Ngrok web interface
+      environment:
+        - NGROK_AUTH_TOKEN=${NGROK_AUTH_TOKEN}
+        - NGROK_DOMAIN=${NGROK_DOMAIN}  # For custom domains (paid)
+      depends_on:
+        - mailquell-backend
+      networks:
+        - mailquell-network
+      # Optional: Save ngrok config
+      volumes:
+        - ./ngrok.yml:/etc/ngrok.yml
+
+
+
+networks:
+  mailquell-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+    driver: local
