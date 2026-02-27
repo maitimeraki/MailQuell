@@ -24,6 +24,11 @@ RUN npm run build
 
 # Use smaller nginx image
 FROM node:22-alpine AS runner
+
+# Accept build argument for backend URL
+ARG VITE_BACKEND_URL
+# # Make it available as env variable during build
+ENV VITE_BACKEND_URL=$VITE_BACKEND_URL
 WORKDIR /mailquell/app
 # Copy built files
 # 1 Copy package files for runtime dependencies
@@ -38,4 +43,4 @@ COPY --from=builder /mailquell/app/dist ./dist
 EXPOSE 5173
 # Start the app (adjust command as needed for your setup)
 
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "preview"]
