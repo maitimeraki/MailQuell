@@ -65,6 +65,7 @@ router.post("/watch-gmail", async (req, res) => {
         return;
       }
       const { historyId, expiration } = watchInfo.get(createdBy);
+      await redisClient.set(`gmail:history:${profileInformation.email}`, historyId); // Store historyId with 7-day expiry
       // persist watch metadata idempotently
       await startWatch({ createdBy, expiration, historyId });
       if (!res.headersSent) return res.json({ ok: true, watching: true });
