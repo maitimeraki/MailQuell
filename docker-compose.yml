@@ -28,7 +28,7 @@ services:
         # Alternatively, you can directly set environment variables here
         environment:
           - REDIS_URL=redis://redis:6379  # Use service name, not localhost for inter-container communication
-          - NODE_ENV=production  # Direct overrid
+          - NODE_ENV=development  # Direct override of NODE_ENV
         depends_on:
           - redis  # Ensure Redis starts before backend
           # - ngrok  # Ensure ngrok starts before backend (if needed for backend exposure)
