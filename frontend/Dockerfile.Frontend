@@ -8,8 +8,12 @@ COPY package*.json ./
 RUN npm ci && \
     npm cache clean --force
 
-# Stage 2: Build
+# Stage 2: Build stage for frontend
 FROM node:22-alpine AS builder
+## 1. Define ARG to accept a value during 'docker build --build-arg VITE_URL=...'
+ARG VITE_BACKEND_URL
+## 2. Assign ARG to ENV so it exists at runtime/build time
+ENV VITE_BACKEND_URL=${VITE_BACKEND_URL}
 WORKDIR /mailquell/app
 # Copy dependencies from deps stage
 # COPY --from=depend /mailquell/app/node_modules ./node_modules
@@ -22,22 +26,19 @@ COPY . .
 # Build the app
 RUN npm run build
 
-# Use smaller nginx image
+# Stage 3: Production stage
 FROM node:22-alpine AS runner
 
-# Accept build argument for backend URL
-ARG VITE_BACKEND_URL
-# # Make it available as env variable during build
-ENV VITE_BACKEND_URL=$VITE_BACKEND_URL
 WORKDIR /mailquell/app
 # Copy built files
 # 1 Copy package files for runtime dependencies
 COPY package*.json ./
 # 2 Install only production dependencies
 COPY --from=depend /mailquell/app/node_modules ./node_modules
-# 3 Copy built application from builder stage
+# 3 Copy built application from builder stage to runner stage
 COPY --from=builder /mailquell/app/dist ./dist
-
+# Debug: Check if variable is set (optional)
+RUN echo "Building with VITE_BACKEND_URL=$VITE_BACKEND_URL"
 # Remove default nginx config and static files (optional, saves a bit of space)
 
 EXPOSE 5173
