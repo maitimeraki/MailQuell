@@ -18,7 +18,7 @@ router.post("/watch-gmail", async (req, res) => {
     let access_token = null;
     let tokens = null;
     // Read token from session (no await)
-    if (req.session && req.session. token) {
+    if (req.session && req.session.token) {
       try {
         console.log("Parsing tokens from session using req.session!");
         tokens = typeof req.session.token === "string" ? JSON.parse(req.session.token) : req.session.token;
@@ -80,11 +80,14 @@ router.post("/watch-gmail", async (req, res) => {
 
 
 router.post('/stop-watch', async (req, res) => {
-  const profileInformation = await profileIn();
+  const profileInformation = await profileIn(req.sessionID);
   const createdBy = profileInformation?.sub;
-  await stopWatchHandler(createdBy);
+  const boolean = await stopWatchHandler(req, res);
+  if (!boolean) {
+    return res.status(500).json({ ok: false, error: "Failed to stop watch" });
+  }
   await stopWatch({ createdBy });
-  res.status(200).send('Stopped watching Gmail.');
+  res.status(200).json({ ok: true, message: 'Stopped watching Gmail.' });
 });
 
 
@@ -122,10 +125,9 @@ router.post("/auto-login", async (req, res, next) => {
   } catch (e) {
     console.error("Error in /auto-login:", e);
     if (!res.headersSent)
-      res.status(500).json({ ok: false, error: "Watch toggle failed" });
+      res.status(500).json({ ok: false, error: "Auto login failed" });
   }
 });
-
 
 
 module.exports = router;
