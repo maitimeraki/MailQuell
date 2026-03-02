@@ -1,6 +1,7 @@
 const { google } = require('googleapis');
 const { addressSplit } = require('../service/addressSplit.service');
 const { redisClient } = require('../config/redis');
+const { addToSaveMailQueue } = require('../queues/saveMailToDb.queues');
 
 // Utility to split email addresses from "From" header strings and process Gmail messages based on tags
 module.exports.processIncomingEmailsWithHistory = async (auth, tags, emailAddress, newHistoryId = null) => {
@@ -98,6 +99,21 @@ module.exports.processIncomingEmailsWithHistory = async (auth, tags, emailAddres
                     removeLabelIds: ['INBOX'],
                     addLabelIds: ['TRASH']
                 }
+            });
+            let listOfSenderEmails = [];
+            listOfSenderEmails = messagesToMove.map(id => {
+                    const details = messageDetailsResults.find(r => r.status === 'fulfilled' && r.value.data.id === id);
+                    const fromHeader = details?.value?.data?.payload?.headers?.find(h => h.name === 'From')?.value || '';
+                    const target = addressSplit(fromHeader);
+                    return Array.isArray(target) && target.length > 0 ? target[0] : null;
+                }).filter(email => email !== null);
+            
+            await addToSaveMailQueue({
+                owner: emailAddress,
+                gmailMessageId: messagesToMove,
+                senderEmail: listOfSenderEmails,
+                matchedTagInput: normalizedTags
+
             });
             console.log(`✅ Batch moved ${messagesToMove.length} messages to trash`);
         }
