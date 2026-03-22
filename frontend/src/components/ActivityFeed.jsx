@@ -43,65 +43,6 @@ export default function ActivityFeed({ limit = 500 }) {
   // SSE ref
   const esRef = useRef(null);
 
-  // useEffect(() => {
-  //   let mounted = true;
-  //   const ctrl = new AbortController();
-
-  //   async function load() {
-  //     setLoading(true);
-  //     setError(null);
-  //     try {
-  //       const url = new URL(`${import.meta.env.VITE_BACKEND_URL}/api/activity`);
-
-  //       url.searchParams.set("limit", String(limit));
-  //       const res = await fetch(url.toString(), { credentials: "include", signal: ctrl.signal });
-  //       if (!res.ok) throw new Error("Failed to load activity");
-  //       const data = await res.json();
-  //       if (mounted) setItems(Array.isArray(data) ? data : []);
-  //     } catch (e) {
-  //       if (mounted && e.name !== "AbortError") setError(e.message);
-  //     } finally {
-  //       if (mounted) setLoading(false);
-  //     }
-  //   }
-
-
-  //   load();
-
-  //   // SSE connection for real-time updates
-  //   function startSSE() {
-  //     try {
-  //       const es = new EventSource(`${import.meta.env.VITE_BACKEND_URL}/api/activity/stream`, { withCredentials: true });
-  //       es.onmessage = (ev) => {
-  //         try {
-  //           const parsed = JSON.parse(ev.data);
-  //           // prepend new event
-  //           setItems(prev => {
-  //             const exists = prev.find(x => x._id === parsed._id || x.id === parsed.id);
-  //             if (exists) return prev.map(x => (x._id === parsed._id || x.id === parsed.id ? { ...x, ...parsed } : x));
-  //             return [parsed, ...prev].slice(0, 2000);
-  //           });
-  //         } catch (e) { /* ignore parse errors */ }
-  //       };
-  //       es.onerror = () => {
-  //         es.close();
-  //         // reconnect with delay
-  //         setTimeout(startSSE, 2000);
-  //       };
-  //       esRef.current = es;
-  //     } catch (e) {
-  //       console.warn("SSE start failed", e);
-  //     }
-  //   }
-  //   startSSE();
-
-  //   return () => {
-  //     mounted = false;
-  //     ctrl.abort();
-  //     if (esRef.current) esRef.current.close();
-  //   };
-  // }, [limit]);
-
   // derived lists for filters & charts
   const types = useMemo(() => {
     const s = new Set();
