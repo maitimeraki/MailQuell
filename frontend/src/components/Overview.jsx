@@ -1,8 +1,10 @@
 
 import React, { useEffect, useState, useMemo, useRef } from "react";
-
+import { useProcessedMailStats } from "../hooks/useProcessedMailStats";
+import { useProfile } from "../hooks/useProfile";
 
 export default function Overview() {
+  const { profile } = useProfile();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -14,48 +16,10 @@ export default function Overview() {
   const [tagFilter, setTagFilter] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const tooltipRef = useRef();
+  const createdBy = profile?.sub;
 
-  useEffect(() => {
-    let mounted = true;
-    const ctrl = new AbortController();
-    async function loadAll() {
-      setLoading(true);
-      setError(null);
-      try {
-        // const base = import.meta.env.VITE_BACKEND_URL;
-        // const [inputsRes, matchesRes, statusRes] = await Promise.all([
-        //   fetch(`${base}/api/tag-inputs`, { credentials: "include", signal: ctrl.signal }),
-        //   fetch(`${base}/api/email-matches?limit=500`, { credentials: "include", signal: ctrl.signal }),
-        //   fetch(`${base}/status`, { credentials: "include", signal: ctrl.signal }),
-        // ]);
-
-        if (inputsRes.ok) {
-          const data = await inputsRes.json();
-          if (mounted) setInputsList(Array.isArray(data) ? data : []);
-        }
-
-        if (matchesRes.ok) {
-          const data = await matchesRes.json();
-          if (mounted) setRecentMatches(Array.isArray(data) ? data : []);
-        }
-
-        if (statusRes.ok) {
-          const js = await statusRes.json();
-          if (mounted && js.ok) setWatchInfo(js.status);
-        }
-      } catch (e) {
-        if (mounted && e.name !== "AbortError") setError(String(e));
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    }
-    loadAll();
-    return () => {
-      mounted = false;
-
-      ctrl.abort();
-    };
-  }, [refreshKey]);
+  // --- Processed Mail Stats ---
+  const { stats, loading: statsLoading } = useProcessedMailStats(createdBy);
 
   // Top patterns by number of inputs (simple metric)
   const topPatterns = useMemo(() => {
@@ -135,6 +99,7 @@ export default function Overview() {
     document.getElementById("recent-mails")?.scrollIntoView({ behavior: "smooth" });
   }
 
+
   return (
     <div style={wrap}>
       <header style={header}>
@@ -142,21 +107,47 @@ export default function Overview() {
           <h1 style={{ margin: 0 }}>Overview</h1>
           <div style={{ color: "#6b7280", fontSize: 13 }}>Quick insight into processed mails and top tags</div>
         </div>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <select value={range} onChange={e => setRange(e.target.value)} style={select}>
-            <option value="7d">7 days</option>
-            <option value="30d">30 days</option>
-            <option value="90d">90 days</option>
-          </select>
-          <button onClick={() => setRefreshKey(k => k + 1)} style={button}>Refresh</button>
-        </div>
       </header>
 
-      <section style={statsGrid}>
-        <StatCard title="Total tag inputs" value={inputsList.length} hint="Number of configured tag rules" />
-        <StatCard title="Recent matches" value={recentMatches.length} hint="Matches in workspace" />
-        <StatCard title="Watch" value={watchInfo ? (watchInfo.watching ? "ON" : "OFF") : (loading ? "…" : "unknown")} hint={watchInfo?.lastSyncAt ? `last: ${new Date(watchInfo.lastSyncAt).toLocaleString()}` : "—"} />
-        <StatCard title="Processing" value={watchInfo?.syncStatus || (loading ? "…" : "idle")} hint="Sync status" />
+      {/* Processed Mail Stats Section */}
+      <section style={{ marginBottom: 24 }}>
+        {statsLoading ? (
+          <div>Loading processed mail stats…</div>
+        ) : stats ? (
+          <div style={{ display: "flex", gap: 24 }}>
+            <div>
+              <h3>Processed Mails</h3>
+              <ul>
+                <li>Total: {stats.total}</li>
+                <li>Last 7 days: {stats.last7}</li>
+                <li>Last 30 days: {stats.last30}</li>
+                <li>Last 90 days: {stats.last90}</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Top Tag Inputs</h3>
+              <ol>
+                {stats.tagInputStats.map(t => (
+                  <li key={t._id}>
+                    TagInput ID: {t._id} — {t.count} mails
+                  </li>
+                ))}
+              </ol>
+            </div>
+            <div>
+              <h3>Top Patterns</h3>
+              <ol>
+                {stats.topPatterns.map(p => (
+                  <li key={p._id}>
+                    Pattern: {p._id} — {p.count} mails
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </div>
+        ) : (
+          <div>No processed mail stats available.</div>
+        )}
       </section>
 
       <section style={{ display: "flex", gap: 16, marginTop: 18, alignItems: "flex-start" }}>
