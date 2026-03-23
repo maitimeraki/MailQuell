@@ -11,7 +11,7 @@ module.exports.processIncomingEmailsWithHistory = async (auth, tags, emailAddres
         const normalizedTags = tags.map(tag => tag.toLowerCase().trim());
         const gmail = google.gmail({ version: 'v1', auth });
         console.log("Processing emails using history:", { tags, lastHistoryId, newHistoryId });
-        if (!tags || !Array.isArray(tags) || tags.length === 0) {
+        if (!normalizedTags || !Array.isArray(normalizedTags) || normalizedTags.length === 0) {
             console.log('No valid tags provided');
             return { processed: 0, moved: 0, historyId: lastHistoryId };
         }
@@ -56,6 +56,7 @@ module.exports.processIncomingEmailsWithHistory = async (auth, tags, emailAddres
 
         const messagesToMove = [];
         const messageDetailsPromises = [];
+        const docsToSave = [];
 
         // Get details for all messages to process
         for (const message of messagesToProcess) {
@@ -80,13 +81,33 @@ module.exports.processIncomingEmailsWithHistory = async (auth, tags, emailAddres
                 const target = addressSplit(fromHeader);
 
                 if (target && Array.isArray(target)) {
-                    const emailSet = new Set(target.map(email => email.toLowerCase()));
-                    const isPresent = normalizedTags.some(tag => emailSet.has(tag));
+                    const lowered = new Set(target.map(email => email.toLowerCase()));
+                    const matchedRaws = normalizedTags.filter(t => lowered.has(t));
+                    if (matchedRaws.length === 0) continue; // Skip if no tag matches
 
-                    if (isPresent) {
-                        messagesToMove.push(messagesToProcess[i].id);
-                        console.log(`✅ Marked for removal: ${fromHeader}`);
-                    }
+                    const senderEmail = target[target.length - 1] || ''; // Assuming the last element is the email address
+                    const senderDomain = target?.slice(0, -1)?.join(' ');
+
+                    
+                    messagesToMove.push(messageDetails.data?.id);
+                    console.log(`✅ Marked for removal: ${fromHeader}`);
+                    
+                    docsToSave.push({
+                        owner: emailAddress,
+                        threadId: messageDetails.data?.threadId || null,
+                        gmailMessageId: messageDetails.data?.id,
+                        senderEmail,
+                        senderDomain,
+                        receivedAt: messageDetails.data?.internalDate ? new Date(Number(messageDetails.data?.internalDate)) : new Date(),
+                        processAt: new Date(),
+                        // matchedTagInput: matchedRaws.map(m => m.tagInputId).filter(Boolean),
+                        matchDetails: matchedRaws.map(m => ({
+                            // tagInputId: m.tagInputId || null,
+                            patternRaw: m,
+                            reason: 'sender matched configured tag input'
+                        })),
+                        action: 'thrash' // keep aligned with your schema enum
+                    });
                 }
             }
         }
@@ -100,20 +121,16 @@ module.exports.processIncomingEmailsWithHistory = async (auth, tags, emailAddres
                     addLabelIds: ['TRASH']
                 }
             });
-            let listOfSenderEmails = [];
-            listOfSenderEmails = messagesToMove.map(id => {
-                    const details = messageDetailsResults.find(r => r.status === 'fulfilled' && r.value.data.id === id);
-                    const fromHeader = details?.value?.data?.payload?.headers?.find(h => h.name === 'From')?.value || '';
-                    const target = addressSplit(fromHeader);
-                    return Array.isArray(target) && target.length > 0 ? target[0] : null;
-                }).filter(email => email !== null);
-            
-            await addToSaveMailQueue({
-                owner: emailAddress,
-                gmailMessageId: messagesToMove,
-                senderEmail: listOfSenderEmails,
-                matchedTagInput: normalizedTags
+            // let listOfSenderEmails = [];
+            // listOfSenderEmails = messagesToMove.map(id => {
+            //         const details = messageDetailsResults.find(r => r.status === 'fulfilled' && r.value.data.id === id);
+            //         const fromHeader = details?.value?.data?.payload?.headers?.find(h => h.name === 'From')?.value || '';
+            //         const target = addressSplit(fromHeader);
+            //         return Array.isArray(target) && target.length > 0 ? target[0] : null;
+            //     }).filter(email => email !== null);
 
+            await addToSaveMailQueue({
+                documents: docsToSave
             });
             console.log(`✅ Batch moved ${messagesToMove.length} messages to trash`);
         }
