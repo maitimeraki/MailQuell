@@ -23,6 +23,7 @@ const { redisClient } = require("./config/redis");
 const { metricsRouter, Response } = require("./metrics/metrics.route/metrics.route");
 const profileRoute = require("./routes/profile.route");
 const { gmailWorkerHandler } = require("./workers/gmailWorker");
+const { saveMailToDbWorkerHandler } = require("./workers/saveMailToDb.worker");
 const authenticationRoute = require("./routes/authentication.route");
 //Database connection 
 async function initApp() {
@@ -33,6 +34,8 @@ async function initApp() {
 
     // 2. Start Worker ONLY after DB is ready
     gmailWorkerHandler(redisClient);
+    saveMailToDbWorkerHandler();
+    console.log("✅ Workers initialized successfully");
 
   } catch (err) {
     console.error("❌ Failed to start app:", err);
@@ -77,17 +80,6 @@ app.use(mongoSanitize());                // Prevent NoSQL injection
 app.use(morgan('combined'));
 
 
-//Connect to localhost on port 6379.
-// const redisClient = Redis.createClient({
-//   url: process.env.REDIS_URL || "redis://localhost:6379"
-// });
-
-
-// redisClient.on("error", err => console.log("Redis Client error :", err));
-
-// redisClient.connect().then(() => console.log("Redis Client connected")).catch(err => console.log("Redis connection error :", err));
-
-
 // Add session middleware
 
 app.use(session({
@@ -95,13 +87,16 @@ app.use(session({
   store: new RedisStore({ client: redisClient, prefix: `sess:${process.env.NODE_ENV || 'dev'}:` }),
   name: "connect.sid",
   secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
+  resave: false, //Only saves session to Redis if data actually changed. Prevents unnecessary writes.
+  saveUninitialized: true,// Development: true  → Creates session for OAuth state before login
+// Production:  false → Only saves session after user logs in
   cookie: {
     httpOnly: true,
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     secure: process.env.NODE_ENV === 'production',
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    // secure: false, // For local development, set to false. In production, set to true and ensure HTTPS is used.
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    path: "/", // Ensure cookie is sent for all routes
   }
 }));
 
@@ -110,6 +105,7 @@ app.use('/webhook', webHookRoute);
 app.use(profileRoute);
 app.use('/users', authenticationRoute);
 app.use('/', userRoute);
+app.use('/processed', require('./routes/dataFetch.route'));
 app.use('/api', tagsRoute);
 
 
