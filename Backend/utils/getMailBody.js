@@ -1,10 +1,12 @@
-module.exports.getMailBody = (payload) => {
+// Function declaration is hoisted to the top, so we can safely call it before its definition if you use arrow function it will not be hoisted and you will get an error if you call it before its definition
+
+function getMailBody(payload) {
     let body = "";
-    
+
     // 1. If the message is simple (not multipart)
     if (payload.body && payload.body.data) {
         body = payload.body.data;
-    } 
+    }
     // 2. If the message is multipart, look through the parts
     else if (payload.parts) {
         // We prefer plain text, but you could change this to 'text/html'
@@ -20,3 +22,5 @@ module.exports.getMailBody = (payload) => {
     // Gmail uses Base64URL, so we must decode it correctly(gievs me base64 string to raw string)
     return Buffer.from(body, 'base64').toString('utf-8').slice(0, 600); // Limit to first 600 chars for safety
 };
+
+module.exports = { getMailBody };
