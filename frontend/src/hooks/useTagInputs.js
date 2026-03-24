@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export function useTagInputs({ createdBy, panelId, autoReload = true }) {
   const [items, setItems] = useState([]); // { _id?, patternRaw, pending?, error? }
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState(null);
-  const abortRef = useRef(null);
+  // const abortRef = useRef(null);
 
   let listUrl = new URL(`${import.meta.env.VITE_BACKEND_URL}/api/tag-inputs`);
 
