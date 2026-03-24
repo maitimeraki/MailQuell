@@ -1,69 +1,230 @@
 name: MailQuell CI/CD Pipeline
 
 on: 
-    push: 
-        branches:
-            - main
-    pull_request:
-        branches:
-            - main
+    # push: 
+    #     branches:
+    #         - main
+    # pull_request:
+    #     branches:
+    #         - main
+    workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+  security-events: write
 
 
-jobs: 
-    build-and-test:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v4
+concurrency:
+  group: mailsift-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
-            - name: Set up Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: '22' # Specify the Node.js version you want to use
-                  cache: 'npm' # This speeds up future runs
-                  cache-dependency-path: './Backend/package-lock.json'
 
-            - name: Install dependencies
-              run: npm ci
-              working-directory: ./Backend
+env:
+  REGISTRY: ghcr.io
+  IMAGE_BACKEND: ${{ github.repository_owner }}/mailsift-backend
+  IMAGE_FRONTEND: ${{ github.repository_owner }}/mailsift-frontend
+  NODE_VERSION: "22"
+jobs:
+  backend-ci:
+    name: Backend CI
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Backend
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ ping: 1 })' || mongo --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      NODE_ENV: test
+      MONGODB_URL: mongodb://127.0.0.1:27017/mailquell_test
+      REDIS_URL: redis://127.0.0.1:6379
+      SESSION_SECRET: test-session-secret
+      ENCRYPTED_KEY: 12345678901234567890123456789012
+      GOOGLE_CLIENT_ID: test
+      GOOGLE_CLIENT_SECRET: test
+      GOOGLE_REDIRECT_URI: http://localhost:3000/users/auth/google/callback
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-            - name: Run tests
-              run: npm test
-              working-directory: ./Backend
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: Backend/package-lock.json
 
-    deploy:
-        needs: build-and-test
-        runs-on: ubuntu-latest
-        if: github.ref == 'refs/heads/main'
+      - name: Install dependencies
+        run: npm ci
 
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v3
+      - name: Lint
+        run: npm run lint --if-present
 
-            # Add your deployment steps here.
-            # Example: Deploy to server via SSH (replace with your own logic)
-            # - name: Deploy to Server
-            #   uses: appleboy/ssh-action@v0.1.10
-            #   with:
-            #     host: ${{ secrets.SERVER_HOST }}
-            #     username: ${{ secrets.SERVER_USER }}
-            #     key: ${{ secrets.SERVER_SSH_KEY }}
-            #     script: |
-            #       cd /path/to/app
-            #       git pull
-            #       npm install
-            #       pm2 restart all
+      - name: Run tests
+        run: npm test -- --runInBand
 
-            # # Or deploy to a cloud provider, Docker, etc.
-            # - name: Deploy to Server
-            # uses: appleboy/ssh-action@v0.1.10
-            # with:
-            #     host: ${{ secrets.SERVER_HOST }}
-            #     username: ${{ secrets.SERVER_USER }}
-            #     key: ${{ secrets.SERVER_SSH_KEY }}
-            #     script: |
-            #     cd /path/to/MailSift
-            #     git pull
-            #     cd Backend
-            #     npm install
-            #     pm2 restart all
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: Backend/coverage
+          if-no-files-found: ignore
+
+  frontend-ci:
+    name: Frontend CI
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint --if-present
+
+      - name: Unit tests
+        run: npm test --if-present
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+          if-no-files-found: error
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: [backend-ci, frontend-ci]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Trivy filesystem scan
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: sarif
+          output: trivy-results.sarif
+          severity: CRITICAL,HIGH
+
+      - name: Upload SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-results.sarif
+
+  build-and-push-images:
+    name: Build & Push Docker Images
+    runs-on: ubuntu-latest
+    needs: [backend-ci, frontend-ci, security]
+    if: github.event_name != 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set metadata (backend)
+        id: meta_backend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_BACKEND }}
+          tags: |
+            type=sha
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=ref,event=tag
+
+      - name: Build and push backend
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Backend/Dockerfile.Backend
+          push: true
+          tags: ${{ steps.meta_backend.outputs.tags }}
+          labels: ${{ steps.meta_backend.outputs.labels }}
+
+      - name: Set metadata (frontend)
+        id: meta_frontend
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_FRONTEND }}
+          tags: |
+            type=sha
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=ref,event=tag
+
+      - name: Build and push frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: frontend/Dockerfile.Frontend
+          push: true
+          tags: ${{ steps.meta_frontend.outputs.tags }}
+          labels: ${{ steps.meta_frontend.outputs.labels }}
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build-and-push-images]
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: ${{ secrets.PRODUCTION_APP_URL }}
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USER }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          port: ${{ secrets.PROD_PORT }}
+          script_stop: true
+          script: |
+            set -e
+            cd ${{ secrets.PROD_APP_PATH }}
+
+            echo "${{ secrets.PROD_ENV_FILE }}" > .env
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            docker compose pull
+            docker compose up -d --remove-orphans
+
+            docker image prune -af
