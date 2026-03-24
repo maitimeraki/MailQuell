@@ -199,32 +199,50 @@ jobs:
           push: true
           tags: ${{ steps.meta_frontend.outputs.tags }}
           labels: ${{ steps.meta_frontend.outputs.labels }}
-
-  deploy-production:
-    name: Deploy to Production
+      
+  deploy-simulate:
+    name: Deploy Simulation
     runs-on: ubuntu-latest
     needs: [build-and-push-images]
-    if: github.ref == 'refs/heads/main'
-    environment:
-      name: production
-      url: ${{ secrets.PRODUCTION_APP_URL }}
     steps:
-      - name: Deploy over SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.PROD_HOST }}
-          username: ${{ secrets.PROD_USER }}
-          key: ${{ secrets.PROD_SSH_KEY }}
-          port: ${{ secrets.PROD_PORT }}
-          script_stop: true
-          script: |
-            set -e
-            cd ${{ secrets.PROD_APP_PATH }}
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Validate docker compose
+        run: docker compose config
 
-            echo "${{ secrets.PROD_ENV_FILE }}" > .env
-            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Simulate Deploy on runner
+        run: |
+         docker compose up -d --build
+         step 20
+         docker compose ps
+         docker compose down --remove-orphans
 
-            docker compose pull
-            docker compose up -d --remove-orphans
+  # deploy-production:
+  #   name: Deploy to Production
+  #   runs-on: ubuntu-latest
+  #   needs: [build-and-push-images]
+  #   if: github.ref == 'refs/heads/main'
+  #   environment:
+  #     name: production
+  #     url: ${{ secrets.PRODUCTION_APP_URL }}
+  #   steps:
+  #     - name: Deploy over SSH
+  #       uses: appleboy/ssh-action@v1.0.3
+  #       with:
+  #         host: ${{ secrets.PROD_HOST }}
+  #         username: ${{ secrets.PROD_USER }}
+  #         key: ${{ secrets.PROD_SSH_KEY }}
+  #         port: ${{ secrets.PROD_PORT }}
+  #         script_stop: true
+  #         script: |
+  #           set -e
+  #           cd ${{ secrets.PROD_APP_PATH }}
 
-            docker image prune -af
+  #           echo "${{ secrets.PROD_ENV_FILE }}" > .env
+  #           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+  #           docker compose pull
+  #           docker compose up -d --remove-orphans
+
+  #           docker image prune -af
+
