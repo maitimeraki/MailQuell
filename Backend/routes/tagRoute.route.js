@@ -1,10 +1,9 @@
 const express = require('express');
 const Crypto = require('crypto');
 const router = express.Router();
-const fs = require("fs").promises;
-const path = require("path");
+// const fs = require("fs").promises;
+// const path = require("path");
 const { getdb } = require("../db/db");
-const { ObjectId } = require("mongodb");
 const { createdByQuerySchema, createTagInputBodySchema, removeTagInputParamsSchema, clearAllTagInputParamsSchema, createTagPageBodySchema, updateTagPageParamsSchema, updateTagPageBodySchema, removeTagPageParamsSchema, validateBody, validateQuery, validateParams } = require('../validations/tag.route.validation');
 
 router.get("/tag-inputs", validateQuery(createdByQuerySchema), async (req, res) => {
@@ -24,7 +23,7 @@ router.post("/create-tag-inputs", validateBody(createTagInputBodySchema), async 
     try {
         let { createdBy, patternRaw, tagsPageId } = req.body;
         // if (!createdBy || !patternRaw) return res.status(400).json({ error: "workspaceId & patternRaw required" });
-        const trackingId = crypto.randomUUID(); // Generate ID
+        const trackingId = Crypto.randomUUID(); // Generate ID
         const createInput = await getdb().collection("taginputs");
         const now = new Date();
         const doc = { _id: trackingId, createdBy, patternRaw, tagsPageId: tagsPageId, createdAt: now, updatedAt: now };
@@ -69,7 +68,8 @@ router.delete("/remove-tag-inputs/:id", validateParams(removeTagInputParamsSchem
         await getdb().collection("tagpages").updateMany({}, { $pull: { tagInputIds: id } }, { $set: { updateAt: now } });
         res.json({ deleted: true });
     } catch (e) {
-        throw e;
+        res.status(500).json({ error: "Error occurred while removing tag input" });
+        throw Error("Error occurred while removing tag input", { cause: e });
     }
 });
 
@@ -85,7 +85,8 @@ router.delete('/clearall-tag-inputs/:id', validateParams(clearAllTagInputParamsS
         await getdb().collection("tagpages").updateMany({}, { $pull: { tagInputIds: id } }, { $set: { updateAt: now } });
         res.json({ deleted: true });
     } catch (e) {
-        throw e;
+        res.status(500).json({ error: "Error occurred while clearing tag inputs" });
+        throw Error("Error occurred while clearing tag inputs", { cause: e });
     }
 });
 
@@ -112,7 +113,7 @@ router.post("/create-tag-page", validateBody(createTagPageBodySchema), async (re
         // if (!name || !createdBy) return res.status(400).json({ error: "name & createdBy required" });
         const create = await getdb().collection("tagpages");
         const now = new Date();
-        const tagPageId = crypto.randomUUID();
+        const tagPageId = Crypto.randomUUID();
         const doc = {
             _id: tagPageId,
             name,
@@ -141,7 +142,8 @@ router.patch("/update-tag-page/:id", validateParams(updateTagPageParamsSchema), 
             { returnDocument: 'after' });
         return res.json(docs.value);
     } catch (e) {
-        throw e;
+        res.status(500).json({ error: "Error occurred while updating tag page" });
+        throw Error("Error occurred while updating tag page", { cause: e });
     }
 
 });
@@ -156,11 +158,12 @@ router.delete("/remove-tag-page/:id", validateParams(removeTagPageParamsSchema),
         // Remove all tag inputs in this page
         const r = await deletePage.deleteOne({ _id: id });
         if (!r.deletedCount) return res.status(404).json({ error: "Not found" });
-        const deleteTagInputs = await deleteInput.deleteMany({ tagsPageId:(id) });
+        const deleteTagInputs = await deleteInput.deleteMany({ tagsPageId: (id) });
         // optional: remove all tag inputs in this page
         res.json({ deleted: true, deletedTagInputs: deleteTagInputs.deletedCount });
     } catch (e) {
-        throw e;
+        res.status(500).json({ error: "Error occurred while removing tag page" });
+        throw Error("Error occurred while removing tag page", { cause: e });
     }
 })
 
