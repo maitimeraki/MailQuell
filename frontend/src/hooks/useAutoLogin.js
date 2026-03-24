@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+// import { useNavigate } from 'react-router-dom';
 
 export function useAutoLogin() {
-    const navigate = useNavigate();
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [authenticated, setAuthenticated] = useState(false);
+    // const navigate = useNavigate();
+    const [_loading, setLoading] = useState(true);
+    const [_error, setError] = useState(null);
+    const [_authenticated, _setAuthenticated] = useState(false);
 
     const autologin = useCallback(async () => {
         setLoading(true);

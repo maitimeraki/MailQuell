@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,7 +28,7 @@ function HomePage() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex justify-between items-center h-16">
             {/* Logo/Brand */}
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <Link to="/" className="text-xl font-bold">
                 MailQuell
               </Link>
@@ -109,7 +109,7 @@ function HomePage() {
       </nav>
       <div className="flex flex-col min-h-screen min-w-full bg-white text-gray-900">
         {/* Hero Section */}
-        <section className="flex flex-col items-center justify-center text-center py-20 px-6 bg-gradient-to-b from-indigo-50 to-white">
+        <section className="flex flex-col items-center justify-center text-center py-20 px-6 bg-linear-to-b from-indigo-50 to-white">
           <h1 className="text-5xl font-bold tracking-tight mb-6">
             Manage Your Gmail Smarter with{" "}
             <span className="text-indigo-600">MailQuell</span>

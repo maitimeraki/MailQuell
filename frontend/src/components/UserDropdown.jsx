@@ -1,10 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
+import  { useEffect, useRef, useState } from "react";
 import { Switch } from "@/components/ui/switch"; // add this import
 export function UserDropdown({ profile, open, onClose, onSignOut }) {
   const ref = useRef(null);
   const [watching, setWatching] = useState(false);
   const [loadingWatch, setLoadingWatch] = useState(false);
-  const [watchInfo, setWatchInfo] = useState(null);
+  const [_watchInfo, setWatchInfo] = useState(null);
 
   async function fetchStatus() {
     try {

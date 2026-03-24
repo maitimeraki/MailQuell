@@ -1,328 +1,274 @@
-// ...existing code...
-import React, { useEffect, useState, useMemo, useRef } from "react";
+// ActivityFeed.jsx
+// Subject + sender shown in cards
+// Full details (including body) shown only on click drawer
 
-/*
-  Enhanced ActivityFeed:
-  - Real-time updates (SSE)
-  - Advanced filtering & saved views (localStorage)
-  - Detail drawer with quick actions (ack/resolve)
-  - Aggregation charts with drill-down (timeline + top tags)
-  - Simple alerts creation UI (sends to backend)
-*/
+import { useEffect, useMemo, useState } from "react";
+import { useProfile } from "../hooks/useProfile";
+import { useProcessedMailStats } from "../hooks/useProcessedMailStats";
 
+const statusColors = {
+  processed: "#22c55e",
+  failed: "#ef4444",
+  queued: "#f59e42",
+  pending: "#fbbf24",
+  default: "#64748b"
+};
 
 export default function ActivityFeed({ limit = 500 }) {
+  const { profile } = useProfile();
+  const createdBy = profile?.email || profile?.sub;
+  const { stats } = useProcessedMailStats(createdBy);
+
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState("");
 
-
-  // filters
-  const [typeFilter, setTypeFilter] = useState("all");
-  const [tagFilter, setTagFilter] = useState(null);
+  const [statusFilter, setStatusFilter] = useState("all");
   const [search, setSearch] = useState("");
-  const [dateRangeDays, setDateRangeDays] = useState(30);
-
-  // pagination
   const [page, setPage] = useState(1);
-  const perPage = 20;
-
-  // saved views
-  const [savedViews, setSavedViews] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("activity.views") || "[]"); } catch { return []; }
-  });
-
-  // detail drawer
+  const perPage = 12;
   const [selected, setSelected] = useState(null);
-  const drawerRef = useRef();
 
-  // alerts UI
-  const [showAlertForm, setShowAlertForm] = useState(false);
-  const [alertThreshold, setAlertThreshold] = useState(50);
+  useEffect(() => {
+    if (!createdBy) return;
 
-  // SSE ref
-  const esRef = useRef(null);
+    let cancelled = false;
+    const ctrl = new AbortController();
 
-  // derived lists for filters & charts
-  const types = useMemo(() => {
-    const s = new Set();
-    for (const i of items) if (i.type) s.add(i.type.toLowerCase());
+    async function load() {
+      setLoading(true);
+      setError("");
+      try {
+        const url = new URL(`${import.meta.env.VITE_BACKEND_URL}/processed/mail-activity`);
+        url.searchParams.set("limit", String(limit));
+        url.searchParams.set("createdBy", String(createdBy));
+
+        const res = await fetch(url.toString(), {
+          credentials: "include",
+          signal: ctrl.signal
+        });
+
+        if (!res.ok) throw new Error(`Failed to load activity (${res.status})`);
+        const data = await res.json();
+
+        if (!cancelled) {
+          const normalized = (Array.isArray(data) ? data : []).map((it) => ({
+            ...it,
+            status: (it.status || "processed").toLowerCase()
+          }));
+          setItems(normalized);
+        }
+      } catch (e) {
+        if (!cancelled && e.name !== "AbortError") {
+          setError(e.message || "Failed to load activity");
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      cancelled = true;
+      ctrl.abort();
+    };
+  }, [limit, createdBy]);
+
+  const statuses = useMemo(() => {
+    const s = new Set(items.map((i) => i.status).filter(Boolean));
     return Array.from(s).sort();
   }, [items]);
 
-  const topTags = useMemo(() => {
-    const freq = {};
-    for (const it of items) {
-      (it.tags || []).forEach(t => { freq[t] = (freq[t] || 0) + 1; });
-    }
-    return Object.entries(freq).map(([tag, count]) => ({ tag, count })).sort((a, b) => b.count - a.count).slice(0, 8);
-  }, [items]);
-
-  const timeline = useMemo(() => {
-    const now = Date.now();
-    const days = Math.max(1, Math.min(90, dateRangeDays));
-    const buckets = {};
-    for (let i = 0; i < days; i++) { const d = new Date(now - (days - 1 - i) * 86400000).toISOString().slice(0, 10); buckets[d] = 0; }
-    for (const it of items) {
-      const t = new Date(it.createdAt || it.ts || Date.now()).getTime();
-      const key = new Date(t).toISOString().slice(0, 10);
-      if (key in buckets) buckets[key] += 1;
-    }
-    return Object.entries(buckets).map(([day, count]) => ({ day, count }));
-  }, [items, dateRangeDays]);
-
-  // filtered items list
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return items.filter(i => {
-      if (typeFilter !== "all" && (i.type || "").toLowerCase() !== typeFilter) return false;
-      if (tagFilter && !((i.tags || []).includes(tagFilter))) return false;
-      if (q) {
-        return JSON.stringify(i).toLowerCase().includes(q);
-      }
-      return true;
+    return items.filter((i) => {
+      if (statusFilter !== "all" && i.status !== statusFilter) return false;
+      if (!q) return true;
+
+      const haystack = [
+        i.subject,
+        i.senderEmail,
+        i.senderDomain,
+        i.message
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      return haystack.includes(q);
     });
-  }, [items, typeFilter, tagFilter, search]);
+  }, [items, statusFilter, search]);
 
   const pages = Math.max(1, Math.ceil(filtered.length / perPage));
   const pageItems = filtered.slice((page - 1) * perPage, page * perPage);
 
-  // actions
-  async function acknowledge(itemId) {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/activity/${itemId}/acknowledge`, { method: "POST", credentials: "include" });
-      if (!res.ok) throw new Error("ack failed");
-      setItems(prev => prev.map(i => i._id === itemId ? { ...i, status: "acknowledged" } : i));
-    } catch (e) {
-      console.error(e);
-    }
-  }
-  async function resolveItem(itemId) {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/activity/${itemId}/resolve`, { method: "POST", credentials: "include" });
-      if (!res.ok) throw new Error("resolve failed");
-      setItems(prev => prev.map(i => i._id === itemId ? { ...i, status: "resolved" } : i));
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  // saved views management (localStorage)
-  function saveView(name) {
-    const view = { name, typeFilter, tagFilter, search, dateRangeDays, createdAt: Date.now() };
-    const newViews = [view, ...savedViews].slice(0, 10);
-    setSavedViews(newViews);
-    localStorage.setItem("activity.views", JSON.stringify(newViews));
-  }
-  function applyView(v) {
-    setTypeFilter(v.typeFilter || "all");
-    setTagFilter(v.tagFilter || null);
-    setSearch(v.search || "");
-    setDateRangeDays(v.dateRangeDays || 30);
-  }
-  function removeView(idx) {
-    const arr = savedViews.slice();
-    arr.splice(idx, 1);
-    setSavedViews(arr);
-    localStorage.setItem("activity.views", JSON.stringify(arr));
-  }
-
-  // create simple alert
-  async function createAlert() {
-    try {
-      const payload = { threshold: Number(alertThreshold), type: typeFilter === "all" ? null : typeFilter, tag: tagFilter || null };
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/activity/alerts`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      if (!res.ok) throw new Error("create alert failed");
-      setShowAlertForm(false);
-      setAlertThreshold(50);
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
   return (
-    <div style={{ padding: 16, maxWidth: 1100, margin: "0 auto" }}>
-      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
-        <div>
-          <h2 style={{ margin: 0 }}>Activity Feed</h2>
-          <div style={{ color: "#6b7280", fontSize: 13 }}>Real-time events, filters, and quick actions</div>
-        </div>
+    <div className="max-w-5xl mx-auto px-4 py-6">
+      <h2 className="text-2xl font-bold mb-4">Activity Feed</h2>
 
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <select value={typeFilter} onChange={e => { setTypeFilter(e.target.value); setPage(1); }} style={{ padding: 8 }}>
-            <option value="all">All types</option>
-            {types.map(t => <option key={t} value={t}>{t}</option>)}
-          </select>
+      {stats && (
+        <section className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+          <SummaryItem label="Processed Total" value={stats.total} />
+          <SummaryItem label="7D" value={stats.last7} />
+          <SummaryItem label="30D" value={stats.last30} />
+          <SummaryItem label="90D" value={stats.last90} />
+        </section>
+      )}
 
-          <select value={tagFilter || ""} onChange={e => { setTagFilter(e.target.value || null); setPage(1); }} style={{ padding: 8 }}>
-            <option value="">All tags</option>
-            {topTags.map(t => <option key={t.tag} value={t.tag}>{t.tag} ({t.count})</option>)}
-          </select>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4">
+        <select
+          value={statusFilter}
+          onChange={(e) => {
+            setStatusFilter(e.target.value);
+            setPage(1);
+          }}
+          className="border border-slate-300 rounded-lg px-3 py-2"
+        >
+          <option value="all">All status</option>
+          {statuses.map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
 
-          <input placeholder="Search…" value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} style={{ padding: 8 }} />
-        </div>
-      </header>
+        <input
+          className="md:col-span-2 border border-slate-300 rounded-lg px-3 py-2"
+          placeholder="Search by subject or sender..."
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(1);
+          }}
+        />
+      </div>
 
-      <section style={{ display: "flex", gap: 12, marginTop: 12 }}>
-        <div style={{ flex: 1 }}>
-          <div style={{ marginBottom: 12, padding: 12, borderRadius: 8, background: "#fff", border: "1px solid #eef2ff" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div style={{ color: "#6b7280", fontSize: 13 }}>Activity timeline ({dateRangeDays}d)</div>
-              <div style={{ display: "flex", gap: 8 }}>
-                <select value={dateRangeDays} onChange={e => setDateRangeDays(Number(e.target.value))} style={{ padding: 6 }}>
-                  <option value={7}>7d</option>
-                  <option value={30}>30d</option>
-                  <option value={90}>90d</option>
-                </select>
-                <button onClick={() => { setTypeFilter("all"); setTagFilter(null); setSearch(""); }} style={{ padding: 6 }}>Reset</button>
-              </div>
+      {loading && <div className="text-slate-500">Loading...</div>}
+      {error && <div className="text-red-600">{error}</div>}
+
+      <ul className="space-y-3">
+        {pageItems.map((it, idx) => (
+          <li
+            key={it._id || idx}
+            onClick={() => setSelected(it)}
+            className="bg-white border border-slate-200 rounded-xl p-4 cursor-pointer hover:shadow-md transition"
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <StatusBadge status={it.status} />
+              <span className="text-xs text-slate-400 ml-auto">
+                {new Date(it.createdAt || Date.now()).toLocaleString()}
+              </span>
             </div>
 
-            <div style={{ marginTop: 8 }}>
-              <TimelineChart data={timeline} onBarClick={(day) => { /* optional drill-down */ }} />
-            </div>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 12 }}>
-            <div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                <div style={{ fontSize: 14, color: "#374151" }}>Events</div>
-                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  <button onClick={() => setShowAlertForm(s => !s)} style={{ padding: 6 }}>{showAlertForm ? "Close alert" : "Create alert"}</button>
-                  <button onClick={() => saveView(prompt("Name for saved view") || `view-${Date.now()}`)} style={{ padding: 6 }}>Save view</button>
-                </div>
-              </div>
-
-              {loading && <div style={{ color: "#6b7280" }}>Loading…</div>}
-              {error && <div style={{ color: "red" }}>{error}</div>}
-
-              <ul style={{ listStyle: "none", padding: 0 }}>
-                {pageItems.map(it => (
-                  <li key={it._id || it.id} style={{ padding: 12, marginBottom: 8, borderRadius: 8, background: "#fff", border: "1px solid #f3f4f6", cursor: "pointer" }}
-                    onClick={() => setSelected(it)}>
-                    <div style={{ display: "flex", gap: 12 }}>
-                      <div style={{ width: 44, height: 44, borderRadius: 8, background: "#eef2ff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "#0369a1" }}>
-                        {(it.actor || it.type || "S").charAt(0).toUpperCase()}
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
-                          <div>
-                            <div style={{ fontWeight: 700 }}>{it.type ? it.type.toUpperCase() : "event"}</div>
-                            <div style={{ color: "#6b7280", fontSize: 13 }}>{it.message || ""}</div>
-                            <div style={{ marginTop: 6 }}>{(it.tags || []).slice(0, 3).map(t => <span key={t} style={{ marginRight: 6, background: "#f1f5f9", padding: "4px 8px", borderRadius: 6 }}>{t}</span>)}</div>
-                          </div>
-                          <div style={{ textAlign: "right" }}>
-                            <div style={{ fontSize: 12, color: "#9ca3af" }}>{it.actor || it.workspaceId || "system"}</div>
-                            <div style={{ fontSize: 12, color: "#9ca3af" }}>{new Date(it.createdAt || Date.now()).toLocaleString()}</div>
-                            <div style={{ marginTop: 6, fontSize: 12, color: it.status === "resolved" ? "green" : it.status === "acknowledged" ? "#d97706" : "#6b7280" }}>{it.status || "open"}</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12 }}>
-                <div style={{ color: "#6b7280" }}>{filtered.length} results</div>
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}>Prev</button>
-                  <div style={{ minWidth: 36, textAlign: "center" }}>{page}/{pages}</div>
-                  <button onClick={() => setPage(p => Math.min(pages, p + 1))} disabled={page === pages}>Next</button>
-                </div>
-              </div>
+            <div className="font-semibold text-slate-900 line-clamp-1">
+              {it.subject?.trim() || "(No subject)"}
             </div>
 
-            <aside style={{ width: 300 }}>
-              <div style={{ padding: 12, borderRadius: 8, background: "#fff", border: "1px solid #eef2ff" }}>
-                <div style={{ fontWeight: 700, marginBottom: 8 }}>Top tags</div>
-                {topTags.map(t => (
-                  <div key={t.tag} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", cursor: "pointer" }} onClick={() => { setTagFilter(t.tag); setPage(1); }}>
-                    <div style={{ color: "#374151" }}>{t.tag}</div>
-                    <div style={{ color: "#6b7280" }}>{t.count}</div>
-                  </div>
-                ))}
-                <hr style={{ margin: "8px 0" }} />
-                <div style={{ fontWeight: 700, marginBottom: 6 }}>Saved views</div>
-                {savedViews.length === 0 && <div style={{ color: "#9ca3af" }}>No saved views</div>}
-                {savedViews.map((v, idx) => (
-                  <div key={v.createdAt} style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 6 }}>
-                    <button onClick={() => applyView(v)} style={{ flex: 1, textAlign: "left" }}>{v.name}</button>
-                    <button onClick={() => removeView(idx)} style={{ color: "red" }}>✕</button>
-                  </div>
-                ))}
+            <div className="text-sm text-slate-600 mt-1 line-clamp-1">
+              {it.senderEmail || "Unknown sender"}
+            </div>
+          </li>
+        ))}
+      </ul>
 
-                {showAlertForm && (
-                  <div style={{ marginTop: 12 }}>
-                    <div style={{ fontSize: 13, marginBottom: 6 }}>Create alert</div>
-                    <input type="number" value={alertThreshold} onChange={e => setAlertThreshold(e.target.value)} style={{ width: "100%", padding: 8, marginBottom: 6 }} />
-                    <div style={{ display: "flex", gap: 6 }}>
-                      <button onClick={createAlert} style={{ padding: 8 }}>Create</button>
-                      <button onClick={() => setShowAlertForm(false)} style={{ padding: 8 }}>Cancel</button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </aside>
-          </div>
+      <div className="flex justify-between items-center mt-6">
+        <div className="text-slate-500">{filtered.length} results</div>
+        <div className="flex gap-2 items-center">
+          <button
+            className="px-3 py-1 border rounded disabled:opacity-50"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+          >
+            Prev
+          </button>
+          <span>{page}/{pages}</span>
+          <button
+            className="px-3 py-1 border rounded disabled:opacity-50"
+            onClick={() => setPage((p) => Math.min(pages, p + 1))}
+            disabled={page === pages}
+          >
+            Next
+          </button>
         </div>
+      </div>
 
-      </section>
-
-      {/* detail drawer */}
       {selected && (
-        <div ref={drawerRef} style={{ position: "fixed", right: 16, top: 60, bottom: 16, width: 420, background: "#fff", border: "1px solid #e6eefc", borderRadius: 8, padding: 12, overflow: "auto", zIndex: 60 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
-              <div style={{ fontWeight: 800 }}>{selected.type?.toUpperCase() || "event"}</div>
-              <div style={{ color: "#6b7280", fontSize: 13 }}>{new Date(selected.createdAt || Date.now()).toLocaleString()}</div>
-            </div>
-            <div>
-              <button onClick={() => acknowledge(selected._id)} style={{ marginRight: 8, padding: 8 }}>Acknowledge</button>
-              <button onClick={() => resolveItem(selected._id)} style={{ padding: 8 }}>Resolve</button>
-              <button onClick={() => setSelected(null)} style={{ marginLeft: 8, padding: 6 }}>Close</button>
-            </div>
-          </div>
-
-          <div style={{ marginTop: 12 }}>
-            <div style={{ fontWeight: 700 }}>Message</div>
-            <div style={{ color: "#374151", marginTop: 6 }}>{selected.message || JSON.stringify(selected.meta || {}, null, 2)}</div>
-
-            <div style={{ marginTop: 12 }}>
-              <div style={{ fontWeight: 700 }}>Meta</div>
-              <pre style={{ background: "#f8fafc", padding: 8, borderRadius: 6, overflowX: "auto" }}>{JSON.stringify(selected.meta || {}, null, 2)}</pre>
-            </div>
-
-            <div style={{ marginTop: 12 }}>
-              <div style={{ fontWeight: 700 }}>Related</div>
-              {(selected.relatedIds || []).length === 0 && <div style={{ color: "#9ca3af" }}>No related items</div>}
-              {(selected.relatedIds || []).map(rid => <div key={rid} style={{ padding: 6, borderRadius: 6, background: "#fff", border: "1px solid #f3f4f6", marginTop: 6 }}>{rid}</div>)}
-            </div>
-          </div>
-        </div>
+        <DetailDrawer item={selected} onClose={() => setSelected(null)} />
       )}
     </div>
   );
 }
 
-
-// small timeline chart used above
-function TimelineChart({ data = [], height = 48, onBarClick }) {
-  const max = Math.max(...data.map(d => d.count), 1);
-  const w = data.length * 6;
+function SummaryItem({ label, value }) {
   return (
-    <svg width="100%" height={height} viewBox={`0 0 ${w} ${height}`} preserveAspectRatio="none">
-      {data.map((d, i) => {
-        const x = i * 6;
-        const h = Math.round((d.count / max) * (height - 6));
-        return <rect key={d.day} x={x} y={height - h - 2} width={5} height={h} fill="#94a3b8" style={{ cursor: "pointer" }} onClick={() => onBarClick && onBarClick(d.day)} />;
-      })}
-    </svg>
+    <div className="bg-white border border-slate-200 rounded-lg p-3">
+      <div className="text-xs text-slate-500">{label}</div>
+      <div className="text-xl font-bold text-slate-900">{value}</div>
+    </div>
   );
 }
-// ...existing code...
+
+function StatusBadge({ status }) {
+  const s = (status || "processed").toLowerCase();
+  const color = statusColors[s] || statusColors.default;
+  return (
+    <span
+      className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold"
+      style={{ background: `${color}1f`, color, border: `1px solid ${color}` }}
+    >
+      {s.toUpperCase()}
+    </span>
+  );
+}
+
+function DetailDrawer({ item, onClose }) {
+  return (
+    <div className="fixed right-4 top-16 bottom-4 w-107.5 bg-white border border-slate-200 rounded-xl shadow-lg p-5 z-50 overflow-auto">
+      <div className="flex items-start justify-between gap-3">
+        <h3 className="text-lg font-bold text-slate-900">
+          {item.subject?.trim() || "(No subject)"}
+        </h3>
+        <button
+          className="text-slate-400 hover:text-slate-700"
+          onClick={onClose}
+        >
+          Close
+        </button>
+      </div>
+
+      <div className="text-sm text-slate-500 mt-1">
+        {new Date(item.createdAt || Date.now()).toLocaleString()}
+      </div>
+
+      <div className="mt-4 space-y-3">
+        <Field label="Sender" value={item.senderEmail || "Unknown"} />
+        <Field label="Domain" value={item.senderDomain || "-"} />
+        <Field label="Consumer" value={item.consumer || "-"} />
+        <Field label="Message" value={item.message || "-"} />
+      </div>
+
+      <div className="mt-5">
+        <div className="text-sm font-semibold text-slate-800 mb-1">Body</div>
+        <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm text-slate-700 whitespace-pre-wrap">
+          {item.body || "No body content"}
+        </div>
+      </div>
+
+      <div className="mt-5">
+        <div className="text-sm font-semibold text-slate-800 mb-1">Meta</div>
+        <pre className="bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs overflow-x-auto">
+          {JSON.stringify(item.meta || {}, null, 2)}
+        </pre>
+      </div>
+    </div>
+  );
+}
+
+function Field({ label, value }) {
+  return (
+    <div>
+      <div className="text-xs font-semibold text-slate-500">{label}</div>
+      <div className="text-sm text-slate-800">{value}</div>
+    </div>
+  );
+}
