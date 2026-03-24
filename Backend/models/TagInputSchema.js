@@ -23,12 +23,6 @@ const TagPageSchema = new mongoose.Schema({
     name: { type: String, required: true },
     tagInputIds: { type: [{ type: mongoose.Types.ObjectId, ref: "TagInput" }], default: null }, // array of TagInput ids
     order: { type: Number, default: 0, index: true }, // for sorting
-
-    name: String,
-    tagInputIds: { type: [{ type: mongoose.Types.ObjectId, ref: "TagInput" }], default: null }, // array of TagInput ids
-    order: { type: Number, default: 0, index: true }, // for sorting
-    
-
 }, { timestamps: true });
 
 module.exports.TagInput = mongoose.model("TagInput", TagInputSchema);
