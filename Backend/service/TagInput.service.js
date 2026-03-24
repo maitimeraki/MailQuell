@@ -3,13 +3,13 @@ const { profileIn } = require("./profileData");
 const { name, sub, email } = profileIn() || {};
 exports.createTagInput = async (req, res) => {
     const { patternRaw } = req.body;
-    if (!workspaceId || !patternRaw) return res.status(400).json({ error: "workspaceId & patternRaw required" });
+    if (!patternRaw) return res.status(400).json({ error: "patternRaw required" });
     const doc = {
         workspaceId: String(sub),
 
         createdBy: email,
         patternRaw,
-        patternNorm: norm,
+        // patternNorm: norm,
         tagsPageId: null,
         createdAt: new Date(),
         updatedAt: new Date()
@@ -43,7 +43,7 @@ exports.getTagInput = async (req, res) => {
 exports.updateTagInput = async (req, res) => {
     const updates = { ...req.body, updatedAt: new Date() };
     if (updates.patternRaw) {
-        const { type, norm } = normalizePattern(updates.patternRaw, updates.patternType);
+        const { type, norm } = (updates.patternRaw, updates.patternType);
         updates.patternType = type;
         updates.patternNorm = norm;
     }
