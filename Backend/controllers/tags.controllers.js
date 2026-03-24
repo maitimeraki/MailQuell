@@ -2,6 +2,8 @@ const { google } = require('googleapis');
 const { addressSplit } = require('../service/addressSplit.service');
 const { redisClient } = require('../config/redis');
 const { addToSaveMailQueue } = require('../queues/saveMailToDb.queues');
+const { getMailBody } = require('../utils/getMailBody');
+const { compressAndEncryptOfBody } = require('../utils/CompressMail');
 
 // Utility to split email addresses from "From" header strings and process Gmail messages based on tags
 module.exports.processIncomingEmailsWithHistory = async (auth, tags, emailAddress, newHistoryId = null) => {
@@ -17,7 +19,6 @@ module.exports.processIncomingEmailsWithHistory = async (auth, tags, emailAddres
         }
 
         let messagesToProcess = [];
-
         // Get new mail since last historyId
         if (lastHistoryId) {
             // Use history to get only new changes
@@ -76,6 +77,7 @@ module.exports.processIncomingEmailsWithHistory = async (auth, tags, emailAddres
             if (result.status === 'fulfilled') {
                 const messageDetails = result.value;
                 const headers = messageDetails.data.payload.headers;
+                // --Extract From --
                 const fromHeader = headers.find(h => h.name === 'From')?.value || '';
 
                 const target = addressSplit(fromHeader);
@@ -84,6 +86,12 @@ module.exports.processIncomingEmailsWithHistory = async (auth, tags, emailAddres
                     const lowered = new Set(target.map(email => email.toLowerCase()));
                     const matchedRaws = normalizedTags.filter(t => lowered.has(t));
                     if (matchedRaws.length === 0) continue; // Skip if no tag matches
+                    // --Extract Subject --
+                    const subjectHeader = headers.find(h => h.name === 'Subject')?.value || '(No Subject)';
+                    // --Extract Body --
+                    const emailBody = getMailBody(messageDetails?.data?.payload);
+                    // -- Compressed body--
+                    const compressedBody = compressAndEncryptOfBody(emailBody);
 
                     const senderEmail = target[target.length - 1] || ''; // Assuming the last element is the email address
                     const senderDomain = target?.slice(0, -1)?.join(' ');
@@ -98,6 +106,8 @@ module.exports.processIncomingEmailsWithHistory = async (auth, tags, emailAddres
                         gmailMessageId: messageDetails.data?.id,
                         senderEmail,
                         senderDomain,
+                        subject: subjectHeader,
+                        body: compressedBody,
                         receivedAt: messageDetails.data?.internalDate ? new Date(Number(messageDetails.data?.internalDate)) : new Date(),
                         processAt: new Date(),
                         // matchedTagInput: matchedRaws.map(m => m.tagInputId).filter(Boolean),
@@ -121,13 +131,6 @@ module.exports.processIncomingEmailsWithHistory = async (auth, tags, emailAddres
                     addLabelIds: ['TRASH']
                 }
             });
-            // let listOfSenderEmails = [];
-            // listOfSenderEmails = messagesToMove.map(id => {
-            //         const details = messageDetailsResults.find(r => r.status === 'fulfilled' && r.value.data.id === id);
-            //         const fromHeader = details?.value?.data?.payload?.headers?.find(h => h.name === 'From')?.value || '';
-            //         const target = addressSplit(fromHeader);
-            //         return Array.isArray(target) && target.length > 0 ? target[0] : null;
-            //     }).filter(email => email !== null);
 
             await addToSaveMailQueue({
                 documents: docsToSave
