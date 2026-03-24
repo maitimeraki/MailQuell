@@ -28,20 +28,6 @@ router.post("/watch-gmail", async (req, res) => {
       }
     }
 
-    // Fallback: token stored manually in Redis by auth callback
-    // if (!access_token && redisClient && typeof redisClient.hget === 'function') {
-    //   console.log("Fetching tokens from redis using redisClient!");
-    //   const raw = await redisClient.hGet(`token:${req.sessionID}`);
-    //   if (raw) {
-    //     try {
-    //       tokens = raw;
-    //       access_token = tokens?.access_token || null;
-    //     } catch (e) {
-    //       console.warn("Invalid token payload in redis for", `token:${req.sessionID}`, e);
-    //     }
-    //   }
-    // }
-
     // Ensure we have a valid session first
     if (!access_token) {
       return res.status(401).json({ ok: false, error: "Please login first" });
