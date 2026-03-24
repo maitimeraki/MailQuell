@@ -1,9 +1,9 @@
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect} from "react";
 import { useProfile } from "@/hooks/useProfile";
 import { Navbar } from "@/components/Navbar";
 import { navGroups } from "../utils/navGroups";
 import { NavLink, Outlet } from "react-router";
-import { useAutoLogin } from "../hooks/useAutoLogin";
+// import { useAutoLogin } from "../hooks/useAutoLogin";
 
 export function Dashboard() {
   // const [noTagsPage, setNoTagsPage] = useState(0);
