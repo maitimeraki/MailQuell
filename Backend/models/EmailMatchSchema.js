@@ -2,16 +2,16 @@ const { mongoose } = require("mongoose");
 
 
 const EmailMatchSchema = new mongoose.Schema({
-    workspaceId: { type: String, index: true },
-    gmailMessageId: { type: String, index: true },//Unique identifier from Gmail API for the specific email message
+    owner: { type: String, index: true },
     threadId: { type: String, index: true },//Gmail thread ID for grouping related emails
+    gmailMessageId: { type: String, index: true },//Unique identifier from Gmail API for the specific email message
     senderEmail: { type: String, index: true },//Email address of the sender
     senderDomain: { type: String, index: true },//Domain of the email sender
     receivedAt: { type: Date, index: true },//Timestamp when the email was received
     processAt: { type: Date, index: true },//Timestamp when the email was processed
-    matchedTagInput: [{ type: mongoose.Types.ObjectId, ref: "TagInput" }],
+    // matchedTagInput: [{ type: mongoose.Types.ObjectId, ref: "TagInput" }],
     matchDetails: [{ // diagnostics: which pattern matched and why
-        tagInputId: { type: mongoose.Types.ObjectId, ref: "TagInput" },
+        // tagInputId: { type: mongoose.Types.ObjectId, ref: "TagInput" },
         patternRaw: String,
         reason: String
     }],
@@ -19,6 +19,6 @@ const EmailMatchSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
-EmailMatchSchema.index({ workspaceId: 1, gmailMessageId: 1 }, { unique: true })
+EmailMatchSchema.index({ owner: 1, gmailMessageId: 1 }, { unique: true })
 
 module.exports.EmailMatch = mongoose.model("EmailMatch", EmailMatchSchema);

@@ -1,8 +1,8 @@
 const fs = require("fs").promises;
-const path = require("path");
+const { google } = require("googleapis");
 const watchGmail = require("../controllers/watchGmail");
 const oAuth2Client = require("../controllers/oAuthClient");
-const { maintainWatch, activeWatches } = require("../utils/maintainWatch");
+// const { maintainWatch, activeWatches } = require("../utils/maintainWatch");
 const { profileData } = require('../service/profileData')
 
 
@@ -45,12 +45,21 @@ module.exports.watchGmailHandler = async (req, res) => {
 
 
 // Cleanup function for when user logs out
-module.exports.stopWatchHandler = (userId) => {
-    const watch = activeWatchers.get(userId);
-    if (watch && watch.interval) {
-        clearInterval(watch.interval);
-        activeWatchers.delete(userId);
-        console.log(`Stopped watching for user ${userId}`);
+module.exports.stopWatchHandler = async (req,res) => {
+    try{
+        const tokenData = req.session?.token;
+        console.log('Token data:', tokenData);
+        const tokens = JSON.parse(tokenData);
+        oAuth2Client.setCredentials(tokens);
+        const gmail = google.gmail({ version: "v1", auth: oAuth2Client });
+        await gmail.users.stop({
+            userId: "me",
+        });
+        console.log("Gmail watch stopped successfully for user:");
+        return true;
+    }catch(err){
+        console.error("Error in stopWatchHandler:", err);
+            throw err;
     }
 };
 
