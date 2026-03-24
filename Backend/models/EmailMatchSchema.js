@@ -7,6 +7,8 @@ const EmailMatchSchema = new mongoose.Schema({
     gmailMessageId: { type: String, index: true },//Unique identifier from Gmail API for the specific email message
     senderEmail: { type: String, index: true },//Email address of the sender
     senderDomain: { type: String, index: true },//Domain of the email sender
+    subject: { type: String },//Subject line of the email
+    body: { type: String },//Compressed and encrypted email body
     receivedAt: { type: Date, index: true },//Timestamp when the email was received
     processAt: { type: Date, index: true },//Timestamp when the email was processed
     // matchedTagInput: [{ type: mongoose.Types.ObjectId, ref: "TagInput" }],
