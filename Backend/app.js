@@ -25,6 +25,11 @@ const profileRoute = require("./routes/profile.route");
 const { gmailWorkerHandler } = require("./workers/gmailWorker");
 const { saveMailToDbWorkerHandler } = require("./workers/saveMailToDb.worker");
 const authenticationRoute = require("./routes/authentication.route");
+
+
+const app = express();
+dotenv.config();
+
 //Database connection 
 async function initApp() {
   try {
@@ -43,9 +48,10 @@ async function initApp() {
   }
 }
 
-initApp();
-const app = express();
-dotenv.config();
+async function statups() {
+  await initApp();
+}
+statups();
 
 // Middleware setup
 app.use(cookieParser());
