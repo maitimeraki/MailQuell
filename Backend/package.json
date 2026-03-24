@@ -4,8 +4,10 @@
   "main": "server.js",
   "scripts": {
     "start": "nodemon server.js",
-    "dev": "nodemon proxy.js",
+    "proxy": "nodemon proxy.js",
     "test": "jest",
+    "test:watch": "jest --watchAll",
+    "lint": "eslint . --ext .js --fix",
     "prod": "NODE_ENV=production node server.js"
   },
   "keywords": [],
@@ -32,6 +34,7 @@
     "googleapis": "^144.0.0",
     "helmet": "^8.1.0",
     "ioredis": "^5.9.1",
+    "joi": "^18.1.1",
     "jwt-decode": "^4.0.0",
     "mongodb": "^6.19.0",
     "mongoose": "^8.18.0",
@@ -39,9 +42,12 @@
     "ngrok": "^5.0.0-beta.2",
     "path": "^0.12.7",
     "prom-client": "^15.1.3",
+    "response-time": "^2.3.4",
     "xss-clean": "^0.1.4"
   },
   "devDependencies": {
-    "jest": "^30.2.0"
+    "jest": "^30.3.0",
+    "mongodb-memory-server": "^11.0.1",
+    "supertest": "^7.2.2"
   }
 }
