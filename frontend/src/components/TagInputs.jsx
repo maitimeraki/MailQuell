@@ -1,10 +1,10 @@
-import React, { useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { TagInputPanel } from "./TagInputPanel"; // ensure this path matches your structure
 import { useProfile } from "../hooks/useProfile";
 import { useEffect } from "react";
 export default function TagInputs() {
   const [panels, setPanels] = useState([]); // [{id,name,value}]
-  const [loading, setLoading] = useState(false);
+  const [_loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const { profile } = useProfile();
   const createdBy = profile?.sub;

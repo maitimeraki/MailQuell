@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState, useMemo } from "react";
+import { useCallback, useRef, useState, useMemo } from "react";
 import { useTagInputs } from "@/hooks/useTagInputs";
 import { TagChip } from "@/layout/TagChip";
 import { cn } from "@/lib/utils";
@@ -181,7 +181,7 @@ export function TagInputPanel({
           ))}
           <Input
             ref={inputRef}
-            className="flex-1 border-0 focus-visible:ring-0 shadow-none px-0 min-w-[160px]"
+            className="flex-1 border-0 focus-visible:ring-0 shadow-none px-0 min-w-40"
             placeholder="Add tags (Enter or comma)"
             value={input}
             onChange={(e) => setInput(e.target.value)}

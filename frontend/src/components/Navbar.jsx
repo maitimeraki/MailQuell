@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { ProfileAvatar } from './ProfileAvatar';
 import { UserDropdown } from './UserDropdown';
 

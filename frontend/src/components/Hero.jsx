@@ -1,9 +1,8 @@
-import React from 'react'
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 function Hero() {
   return (
-    <section className="text-center py-20 bg-gradient-to-b from-blue-50 to-white">
+    <section className="text-center py-20 bg-linear-to-b from-blue-50 to-white">
       <motion.h1
         className="text-5xl font-bold text-gray-900"
         initial={{ opacity: 0, y: -20 }}
