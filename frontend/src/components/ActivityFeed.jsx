@@ -223,7 +223,7 @@ function StatusBadge({ status }) {
 
 function DetailDrawer({ item, onClose }) {
   return (
-    <div className="fixed right-4 top-16 bottom-4 w-[430px] bg-white border border-slate-200 rounded-xl shadow-lg p-5 z-50 overflow-auto">
+    <div className="fixed right-4 top-16 bottom-4 w-107.5 bg-white border border-slate-200 rounded-xl shadow-lg p-5 z-50 overflow-auto">
       <div className="flex items-start justify-between gap-3">
         <h3 className="text-lg font-bold text-slate-900">
           {item.subject?.trim() || "(No subject)"}
