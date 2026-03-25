@@ -216,7 +216,7 @@ jobs:
       - name: Simulate Deploy on runner
         run: |
          docker compose up -d --build
-         step 20
+         sleep 20
          docker compose ps
          docker compose down --remove-orphans
 
