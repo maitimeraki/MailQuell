@@ -26,9 +26,9 @@ const { gmailWorkerHandler } = require("./workers/gmailWorker");
 const { saveMailToDbWorkerHandler } = require("./workers/saveMailToDb.worker");
 const authenticationRoute = require("./routes/authentication.route");
 
-
-const app = express();
 dotenv.config();
+const app = express();
+
 
 //Database connection 
 async function initApp() {
@@ -36,22 +36,19 @@ async function initApp() {
     // 1. Connect to Database FIRST
     await connectdb();
     console.log("✅ Database connected successfully");
-
+    
     // 2. Start Worker ONLY after DB is ready
     gmailWorkerHandler(redisClient);
     saveMailToDbWorkerHandler();
     console.log("✅ Workers initialized successfully");
-
+    
   } catch (err) {
     console.error("❌ Failed to start app:", err);
     process.exit(1);
   }
 }
 
-async function statups() {
-  await initApp();
-}
-statups();
+initApp()
 
 // Middleware setup
 app.use(cookieParser());

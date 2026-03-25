@@ -9,7 +9,9 @@ public/
 # Git
 .git
 .gitignore
-.env
+# .env // Do not write .env in .dockerignore if you want to use it in the container. Instead, use --env-file when running the container to specify which .env file to use.
+
+
 # Docker
 # Exclude the Dockerfile and docker-compose files to prevent
 # them from being copied into the final image unnecessarily.
