@@ -212,7 +212,7 @@ jobs:
 
       - name: Simulate Deploy on runner
         run: |
-         docker compose up -d --build
+         docker compose --env-file ./Backend/.env up -d --build
          step 20
          docker compose ps
          docker compose down --remove-orphans
