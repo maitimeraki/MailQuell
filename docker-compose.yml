@@ -23,8 +23,8 @@ services:
         networks:
           - mailquell-network
         # Use env_file to load environment variables from a .env file
-        env_file:
-          - ./Backend/.env
+        # env_file: // Command to avoid error from docker deamon and also from github actions workflow
+        #   - ./Backend/.env
         # Alternatively, you can directly set environment variables here
         environment:
           - REDIS_URL=redis://redis:6379  # Use service name, not localhost for inter-container communication
