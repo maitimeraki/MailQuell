@@ -45,15 +45,7 @@ MailSift connects to Gmail via OAuth 2.0, lets users define pattern-driven tags,
 
 ### Product Video
 
-```html
-<video controls width="900" src="docs/demo/mailquell-demo.mp4">
-  Your browser does not support the video tag.
-</video>
-```
-
-Tip: Place your demo video file at `docs/demo/mailquell-demo.mp4`.
-
----
+[![Watch the Video](frontend/src/assets/front.png](https://youtu.be/e_KCvPsPfDw)
 
 ## Highlights
 
